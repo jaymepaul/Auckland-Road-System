@@ -1,8 +1,10 @@
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -18,10 +20,23 @@ public class Node {
 	public final Location location;
 	public final Collection<Segment> segments;
 
+	private Collection<Segment> inNeighbours;
+	private Collection<Segment> outNeighbours;
+	
+	private boolean visited;
+	private Node pathFrom; 
+	private double cost;
+	
 	public Node(int nodeID, double lat, double lon) {
 		this.nodeID = nodeID;
 		this.location = Location.newFromLatLon(lat, lon);
 		this.segments = new HashSet<Segment>();
+		
+		this.visited = false;					//Initially set to false
+		this.pathFrom = null;					//Initially null
+		
+		this.inNeighbours = new ArrayList<Segment>();
+		this.outNeighbours = new ArrayList<Segment>();
 	}
 
 	public void addSegment(Segment seg) {
@@ -52,6 +67,54 @@ public class Node {
 		}
 		return str.substring(0, str.length() - 2);
 	}
+	
+	public double estimate(Node origin, Node destination, Collection<Segment> segments){
+		
+		double estimate = 0;
+		
+		int originID = origin.nodeID;
+		int destID = destination.nodeID;
+		
+		for(Segment s : segments){
+			
+		}
+		
+		return estimate;
+	}
+
+	public Collection<Segment> getInNeighbours() {
+		return inNeighbours;
+	}
+
+	public Collection<Segment> getOutNeighbours() {
+		return outNeighbours;
+	}
+
+	public boolean isVisited() {
+		return visited;
+	}
+
+	public void setVisited(boolean visited) {
+		this.visited = visited;
+	}
+
+	public Node getPathFrom() {
+		return pathFrom;
+	}
+
+	public void setPathFrom(Node pathFrom) {
+		this.pathFrom = pathFrom;
+	}
+
+	public double getCostToHere() {
+		return cost;
+	}
+
+	public void setCost(double cost) {
+		this.cost = cost;
+	}
+	
+	
 }
 
 // code for COMP261 assignments

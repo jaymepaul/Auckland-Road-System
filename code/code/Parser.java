@@ -105,6 +105,10 @@ public class Parser {
 
 				Segment segment = new Segment(graph, roadID, length, node1ID,
 						node2ID, coords);
+				
+				segment.start.getOutNeighbours().add(segment);			
+				segment.end.getInNeighbours().add(segment);				//Initialize Neighbours
+				
 				set.add(segment);
 			}
 

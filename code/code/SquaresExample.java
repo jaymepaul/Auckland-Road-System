@@ -44,7 +44,7 @@ public class SquaresExample extends GUI {
 	}
 
 	@Override
-	protected void onClick(MouseEvent e) {
+	protected void onClick(MouseEvent e, String source) {
 		/*
 		 * we search from the back to the front of the list (while drawing
 		 * happens front-to-back) so that we always remove the top square if
@@ -104,6 +104,12 @@ public class SquaresExample extends GUI {
 
 	public static void main(String[] args) {
 		new SquaresExample();
+	}
+
+	@Override
+	protected void findShortestPath(String origin, String destination) {
+		// TODO Auto-generated method stub
+		
 	}
 }
 

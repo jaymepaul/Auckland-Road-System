@@ -62,13 +62,19 @@ public abstract class GUI {
 	 * Is called when the mouse is clicked (actually, when the mouse is
 	 * released), and is passed the MouseEvent object for that click.
 	 */
-	protected abstract void onClick(MouseEvent e);
+	protected abstract void onClick(MouseEvent e, String source);
 
 	/**
 	 * Is called whenever the search box is updated. Use getSearchBox to get the
 	 * JTextField object that is the search box itself.
 	 */
 	protected abstract void onSearch();
+	
+	/**
+	 * Is called whenever the origin/destination search boxes are updates
+	 * Uses The A* Algorithm to find the shortest path.
+	 */
+	protected abstract void findShortestPath(String origin, String destination);
 
 	/**
 	 * Is called whenever a navigation button is pressed. An instance of the
@@ -109,6 +115,22 @@ public abstract class GUI {
 	 */
 	public JTextField getSearchBox() {
 		return search;
+	}
+	
+	public JTextField getSearchOrigin() {
+		return searchOrigin;
+	}
+
+	public void setSearchOrigin(JTextField searchOrigin) {
+		this.searchOrigin = searchOrigin;
+	}
+
+	public JTextField getSearchDestination() {
+		return searchDestination;
+	}
+
+	public void setSearchDestination(JTextField searchDestination) {
+		this.searchDestination = searchDestination;
 	}
 
 	/**
@@ -163,7 +185,12 @@ public abstract class GUI {
 	private JTextArea textOutputArea;
 
 	private JTextField search;
+	private JTextField searchOrigin;
+	private JTextField searchDestination;
 	private JFileChooser fileChooser;
+	
+	private int mouseCounter = 0;
+	private MouseAdapter mouseHandle;
 
 	public GUI() {
 		initialise();
@@ -279,6 +306,15 @@ public abstract class GUI {
 				redraw();
 			}
 		});
+		
+		JButton findPath = new JButton("Find Path");			//Find Path Button
+		findPath.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				
+				findShortestPath(searchOrigin.getText(), searchDestination.getText());
+				redraw();
+			}
+		});
 
 		// next, make the search box at the top-right. we manually fix
 		// it's size, and add an action listener to call your code when
@@ -304,6 +340,20 @@ public abstract class GUI {
 				}
 			});
 		}
+		
+		searchOrigin = new JTextField(SEARCH_COLS);				//Create Origin SearchBox
+		searchOrigin.setMaximumSize(new Dimension(0, 25));
+		searchOrigin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		
+		searchDestination = new JTextField(SEARCH_COLS);		//Create Destination SearchBox
+		searchDestination.setMaximumSize(new Dimension(0, 25));
+		searchDestination.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
 
 		/*
 		 * next, make the top bar itself and arrange everything inside of it.
@@ -355,6 +405,12 @@ public abstract class GUI {
 		controls.add(new JLabel("Search"));
 		controls.add(Box.createRigidArea(new Dimension(5, 0)));
 		controls.add(search);
+		
+		controls.add(findPath);					//Add Find Path button
+		controls.add(new JLabel("Origin: "));
+		controls.add(searchOrigin);				//Add Search TextBoxes to GUI
+		controls.add(new JLabel("Destination: "));
+		controls.add(searchDestination);
 
 		/*
 		 * then make the drawing canvas, which is really just a boring old
@@ -373,12 +429,27 @@ public abstract class GUI {
 		// drawn until it is resized.
 		drawing.setVisible(true);
 
-		drawing.addMouseListener(new MouseAdapter() {
+		mouseHandle = new MouseAdapter() {					//Mouse Handle
 			public void mouseReleased(MouseEvent e) {
-				onClick(e);
-				redraw();
+				
+
+				if(mouseCounter == 0){
+					onClick(e, "Origin");
+					mouseCounter++;
+				}
+				else if(mouseCounter == 1){
+					onClick(e, "Destination");
+					mouseCounter++;
+					
+					if(mouseCounter == 2){
+						redraw();
+						mouseCounter = 0;
+					}
+					
+				}
 			}
-		});
+		};
+		drawing.addMouseListener(mouseHandle);						//TEST
 
 		drawing.addMouseWheelListener(new MouseAdapter() {
 			public void mouseWheelMoved(MouseWheelEvent e) {
