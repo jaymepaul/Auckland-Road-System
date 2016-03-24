@@ -1,68 +1,86 @@
 
 public class FringeNode implements Comparable {
 
-	private Node neighbor;
-	private Node from;
-	private double costToNeighbor;
-	private double heuristic;
+	private Node node;
+	private Node parent;
+	private double costToHere;
+	private double totEstCost;
 	
 	private double totalCostToGoal;
-	private double totalDistanceToGoal;
+	private double distToGoal;
 	
-	public FringeNode(Node neighbor, Node from, double costToNeighbor, double heuristic){
-		this.neighbor = neighbor;
-		this.from = from;
-		this.costToNeighbor = costToNeighbor;
-		this.heuristic = heuristic;
+	public FringeNode(Node node, Node parent, double costToHere, double totEstCost){
+		this.node = node;
+		this.parent = parent;
+		this.costToHere = costToHere;
+		this.totEstCost = totEstCost;
 		
-		if(costToNeighbor == 0)
-			this.totalDistanceToGoal = heuristic;
+		if(costToHere == 0)
+			this.distToGoal = totEstCost;
 		
-		this.totalCostToGoal = heuristic;
+		this.totalCostToGoal = totEstCost;
 	}
 
-	public Node getNeighbor() {
-		return neighbor;
-	}
-
-	public void setNeighbor(Node neighbor) {
-		this.neighbor = neighbor;
-	}
-
-	public Node getFrom() {
-		return from;
-	}
-
-	public void setFrom(Node from) {
-		this.from = from;
-	}
-
-	public double getCostToNeighbor() {
-		return costToNeighbor;
-	}
-
-	public void setCostToNeighbor(double costToNeighbor) {
-		this.costToNeighbor = costToNeighbor;
-	}
-
-	public double getHeuristic() {
-		return heuristic;
-	}
-
-	public void setHeuristic(double heuristic) {
-		this.heuristic = heuristic;
-	}
 	
 
-	public double getTotalDistanceToGoal() {
-		return totalDistanceToGoal;
+	public Node getNode() {
+		return node;
 	}
 
-	public void setTotalDistanceToGoal(double totalDistanceToGoal) {
-		this.totalDistanceToGoal = totalDistanceToGoal;
+
+
+	public void setNode(Node node) {
+		this.node = node;
 	}
+
+
+
+	public Node getParent() {
+		return parent;
+	}
+
+
+
+	public void setParent(Node parent) {
+		this.parent = parent;
+	}
+
+
+
+	public double getCostToHere() {
+		return costToHere;
+	}
+
+	public void setCostToHere(double costToHere) {
+		this.costToHere = costToHere;
+	}
+
+
 	
+
+	public double getTotEstCost() {
+		return totEstCost;
+	}
+
+
+
+	public void setTotEstCost(double totEstCost) {
+		this.totEstCost = totEstCost;
+	}
+
 	
+
+	public double getDistToGoal() {
+		return distToGoal;
+	}
+
+
+
+	public void setDistToGoal(double distToGoal) {
+		this.distToGoal = distToGoal;
+	}
+
+
 
 	public double getTotalCostToGoal() {
 		return totalCostToGoal;
@@ -76,8 +94,16 @@ public class FringeNode implements Comparable {
 	public int compareTo(Object o) {
 
 		FringeNode fn = (FringeNode) o;
+		int comp = 0;
 		
-		return (int) (totalCostToGoal - fn.totalCostToGoal);
+		if(fn.totEstCost < totEstCost)
+			comp = 1;
+		else if(fn.totEstCost > totEstCost)
+			comp = -1;
+		else 
+			comp = 0;
+		
+		return comp;
 	}
 	
 	

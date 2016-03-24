@@ -42,6 +42,7 @@ public class Segment {
 			g.drawLine(p.x, p.y, q.x, q.y);
 		}
 	}
+	
 }
 
 // code for COMP261 assignments

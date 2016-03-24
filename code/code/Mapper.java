@@ -208,55 +208,75 @@ public class Mapper extends GUI {
 		
 		while (!fringe.isEmpty()) {
 
-			FringeNode fn = fringe.poll(); 			// POLL the lowest cost!!		
-			Node neighbor = fn.getNeighbor();		//GOOD TEST 14392 - 14795, DISCONNECTED
+			FringeNode fn = fringe.poll(); 						
+			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, DISCONNECTED
 			
-			displayInfo(fn, totalDist);
+			displayInfo(fn, totalDist);				//Display Info
+			//path.put(graph.getSegmentFromPoints(fn.getParent(), fn.getNode()), fn.getDistToGoal());
 			
-			if (!neighbor.isVisited()) {
-				neighbor.setVisited(true);
-				neighbor.setPathFrom(fn.getFrom());
-				neighbor.setCost(fn.getCostToNeighbor());
+			if (!node.isVisited()) {
+				node.setVisited(true);
+				node.setPathFrom(fn.getParent());
+				node.setCost(fn.getCostToHere());
 			}
 
-			if (neighbor.equals(destination)) {
+			if (node.equals(destination)) {
 				System.out.println("REACHED END GOAL!");
 				break;
 			}
 
-			for (Segment s : neighbor.segments) { // OutNeighbors?
-
+			
+			Node to = null;
+			double costToNeigh = 1000;
+			double estTotal = 1000;
+			for (Segment s : node.segments) { // OutNeighbors?				//Add Neighbors to Fringe
+				
 				if (!s.end.isVisited()) {
-
-					double costToNeigh = fn.getCostToNeighbor() + s.length;
-					double estTotal = costToNeigh + calcHeuristic(s.end, destination);
-					
-					FringeNode f = new FringeNode(s.end, neighbor, costToNeigh, estTotal);
-					f.setTotalDistanceToGoal(calcHeuristic(s.end, destination));
-					
-					fringe.offer(f);
+						
+					//Only get the best path from this current Node to its Neighbors && if we take this path can we reach our destination, NEED A WAY TO DEAL WITH DISCONNECTED, canReach - ARTICULATION POINT
+					if( ((fn.getCostToHere() + s.length) + calcHeuristic(s.end, destination)) <= estTotal){
+						to = s.end;
+						costToNeigh = fn.getCostToHere() + s.length;						//Calculate Cost to here + edge weight from here to neighbor
+						estTotal = costToNeigh + calcHeuristic(s.end, destination);			//Calculate total estimate with heuristic
+					}
 				}
 			}
+			
+			FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
+			f.setDistToGoal(calcHeuristic(to, destination));
+			fringe.offer(f);
+			
 		}
 
 		return path;
 
 	}
 	
+	private boolean canReachDest(Node node, Node destination){
+		
+		boolean canReach = false;
+		
+//		if(){
+//			
+//		}			//can we reach our destination from this node? - find all paths to node, articulation points
+		
+		return canReach;
+	}
+	
 	private void displayInfo(FringeNode fn, double totalDist) {
 		
-		Node from = fn.getFrom();
-		Node to = fn.getNeighbor();
-		double cost = fn.getCostToNeighbor();
-		double totalCostToGoal = fn.getTotalDistanceToGoal();
+		Node from = fn.getParent();
+		Node to = fn.getNode();
+		double cost = fn.getCostToHere();
+		double totalCostToGoal = fn.getTotalCostToGoal();
 		
 		if(from == null){
-			System.out.println(getRoadNameFromPoints(from, to) + "	Distance to Goal: " 
-						+ fn.getTotalDistanceToGoal() + "	TotalDist: " + totalDist);
+			System.out.println(getRoadNameFromPoints(from, to) + "	TotalCostToGoal : "+ totalCostToGoal+"	Distance to Goal: " 
+						+ fn.getDistToGoal() + "	TotalDist: " + totalDist);
 		}
 		else if(from!=null){
-			System.out.println("Street Name: " + getRoadNameFromPoints(from, to) + "	Distance to Goal: " + fn.getTotalDistanceToGoal() + "	FROM: "
-					+ fn.getFrom().nodeID + "	TO: " + to.nodeID + "	TotalDist: " + totalDist);
+			System.out.println("Street Name: " + getRoadNameFromPoints(from, to) + "	TotalCostToGoal : "+ totalCostToGoal+
+					"	Distance to Goal: " + fn.getDistToGoal() + "	FROM: " + fn.getParent().nodeID + "	TO: " + to.nodeID + "	TotalDist: " + totalDist);
 		}
 			
 		

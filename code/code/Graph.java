@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -72,6 +73,20 @@ public class Graph {
 	public void setHighlight(Collection<Road> roads) {
 		this.highlightedRoads = roads;
 	}
+	
+	public Segment getSegmentFromPoints(Node from, Node to){
+		
+		Segment segment = null;
+		
+		for(Segment s :  (List<Segment>)segments){
+			if(s.start == from && s.end == to)
+				segment = s;
+		}
+		
+		return segment;
+		
+	}
+	
 }
 
 // code for COMP261 assignments
