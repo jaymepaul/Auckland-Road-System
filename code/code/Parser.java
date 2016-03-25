@@ -108,6 +108,9 @@ public class Parser {
 				
 				segment.start.getOutNeighbours().add(segment);			
 				segment.end.getInNeighbours().add(segment);				//Initialize Neighbours
+				segment.end.getOutNeighbours().add(segment);
+				
+			
 				
 				set.add(segment);
 			}

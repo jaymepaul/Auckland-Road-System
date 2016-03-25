@@ -1,4 +1,5 @@
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -6,6 +7,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,9 +26,10 @@ public class Graph {
 	// just some collection of Segments.
 	Collection<Segment> segments;
 
-	Node highlightedNode;
+	Node highlightedNode, startNode, endNode;
 	Collection<Road> highlightedRoads = new HashSet<>();
-
+	Collection<Segment> highlightedSegments = new HashSet<>();
+	
 	public Graph(File nodes, File roads, File segments, File polygons) {
 		this.nodes = Parser.parseNodes(nodes, this);
 		this.roads = Parser.parseRoads(roads, this);
@@ -53,6 +56,11 @@ public class Graph {
 				seg.draw(g2, origin, scale);
 			}
 		}
+		
+		//Draw Highlighted Segments
+		for (Segment seg : highlightedSegments) 
+			seg.draw(g2, origin, scale);
+		
 
 		// draw all the nodes.
 		g2.setColor(Mapper.NODE_COLOUR);
@@ -64,6 +72,13 @@ public class Graph {
 			g2.setColor(Mapper.HIGHLIGHT_COLOUR);
 			highlightedNode.draw(g2, screen, origin, scale);
 		}
+		if(startNode!=null || endNode!=null){
+			g2.setColor(Color.GREEN);								//Highlight Start and End Nodes
+			startNode.draw(g2, screen, origin, scale);
+			g2.setColor(Color.RED);
+			endNode.draw(g2, screen, origin, scale);
+		}
+		
 	}
 
 	public void setHighlight(Node node) {
@@ -77,14 +92,28 @@ public class Graph {
 	public Segment getSegmentFromPoints(Node from, Node to){
 		
 		Segment segment = null;
-		
-		for(Segment s :  (List<Segment>)segments){
-			if(s.start == from && s.end == to)
+	
+		for(Segment s : segments){
+			if(s.start.nodeID == from.nodeID && s.end.nodeID == to.nodeID 
+					|| s.start.nodeID == to.nodeID && s.end.nodeID == from.nodeID){
 				segment = s;
+			}
 		}
 		
 		return segment;
 		
+	}
+
+	public void setHighlightPath(LinkedHashMap<Segment, Double> path, Node start, Node end) {
+		
+		HashSet<Segment> segs = new HashSet<Segment>();
+		
+		for(Segment s : path.keySet())
+			segs.add(s);
+		
+		this.startNode = start;
+		this.endNode = end;
+		this.highlightedSegments = segs;
 	}
 	
 }

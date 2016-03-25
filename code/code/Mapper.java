@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -91,17 +92,17 @@ public class Mapper extends GUI {
 		Node start = graph.nodes.get(Integer.parseInt(origin));			//Currently operating based on NodeID's
 		Node end = graph.nodes.get(Integer.parseInt(destination));		
 		
-		HashMap<Segment, Double> path = AStarSearch(start, end);	//RoadName + Destination to Goal
+		LinkedHashMap<Segment, Double> path = AStarSearch(start, end);	//RoadName + Destination to Goal
 				
-		List<Road> roads = new ArrayList<Road>();
 		StringBuilder sb = new StringBuilder();
-		for(Map.Entry<Segment, Double> e : path.entrySet()){
-			roads.add((e.getKey().road));
+		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
+		"Start At Intersection: "+start.nodeID+"	Distance To Goal: "+calcHeuristic(start, end)+"\n");
+		for(Map.Entry<Segment, Double> e : path.entrySet())
 			sb.append("Street: " + e.getKey().road.name + "	Distance To Goal: " + e.getValue() +"\n");
-		}	
+		sb.append("REACHED END GOAL!");
 		
 		getTextOutputArea().setText(sb.toString());
-		graph.setHighlight(roads);
+		graph.setHighlightPath(path, start, end);
 		
 	}
 
@@ -188,12 +189,12 @@ public class Mapper extends GUI {
 	 * Uses Fringe and Sets to keep track of neighbors 
 	 * 
 	 * @param Node origin, Node destination*/
-	public HashMap<Segment, Double> AStarSearch(Node origin, Node destination){
+	public LinkedHashMap<Segment, Double> AStarSearch(Node origin, Node destination){
 		
 		System.out.println("PERFORMING A* SEARCH..");
 		System.out.println("ORIGIN ID: " + origin.nodeID + "	DEST ID: " + destination.nodeID);
 		
-		HashMap<Segment, Double> path = new HashMap<Segment, Double>();
+		LinkedHashMap<Segment, Double> path = new LinkedHashMap<Segment, Double>();
 		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
 		double totalDist = calcHeuristic(origin,destination);
 		
@@ -209,10 +210,11 @@ public class Mapper extends GUI {
 		while (!fringe.isEmpty()) {
 
 			FringeNode fn = fringe.poll(); 						
-			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, DISCONNECTED
+			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, DISCONNECTED, WORKING - 14655, 15152
 			
 			displayInfo(fn, totalDist);				//Display Info
-			//path.put(graph.getSegmentFromPoints(fn.getParent(), fn.getNode()), fn.getDistToGoal());
+			if(fn.getParent()!=null)	
+				path.put(graph.getSegmentFromPoints(fn.getParent(), fn.getNode()), fn.getDistToGoal());
 			
 			if (!node.isVisited()) {
 				node.setVisited(true);
@@ -225,27 +227,25 @@ public class Mapper extends GUI {
 				break;
 			}
 
-			
 			Node to = null;
-			double costToNeigh = 1000;
-			double estTotal = 1000;
-			for (Segment s : node.segments) { // OutNeighbors?				//Add Neighbors to Fringe
+			
+			for (Segment s : node.getOutNeighbours()) { 				//Add Neighbors to Fringe
 				
-				if (!s.end.isVisited()) {
-						
-					//Only get the best path from this current Node to its Neighbors && if we take this path can we reach our destination, NEED A WAY TO DEAL WITH DISCONNECTED, canReach - ARTICULATION POINT
-					if( ((fn.getCostToHere() + s.length) + calcHeuristic(s.end, destination)) <= estTotal){
-						to = s.end;
-						costToNeigh = fn.getCostToHere() + s.length;						//Calculate Cost to here + edge weight from here to neighbor
-						estTotal = costToNeigh + calcHeuristic(s.end, destination);			//Calculate total estimate with heuristic
-					}
+				if(node.nodeID == s.start.nodeID)
+					to = s.end;
+				else if(node.nodeID != s.start.nodeID)			//StartID does not equal previous/reverse
+					to = s.start;	
+				
+				if (!to.isVisited()) {
+					//Check if this path is admissible and consistent					//SPECIAL CASE: DEAD END/BACKTRACK
+					double costToNeigh = fn.getCostToHere() + s.length;						//Calculate Cost to here + edge weight from here to neighbor
+					double estTotal = costToNeigh + calcHeuristic(to, destination);			//Calculate total estimate with heuristic
+					
+					FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
+					f.setDistToGoal(calcHeuristic(to, destination));
+					fringe.offer(f);
 				}
-			}
-			
-			FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
-			f.setDistToGoal(calcHeuristic(to, destination));
-			fringe.offer(f);
-			
+			}	
 		}
 
 		return path;
@@ -290,9 +290,11 @@ public class Mapper extends GUI {
 			name = "START: " + neighbor.nodeID;
 		else if(from!=null){
 			for(Segment s : graph.segments){
-				if(s.start.nodeID == from.nodeID && s.end.nodeID == neighbor.nodeID)
+				if(s.start.nodeID == from.nodeID && s.end.nodeID == neighbor.nodeID ||
+						s.start.nodeID == neighbor.nodeID && s.end.nodeID == from.nodeID){
 					name = s.road.name;
-			}
+				}
+			}	
 		}
 		
 		return name;

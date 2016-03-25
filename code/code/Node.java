@@ -87,6 +87,9 @@ public class Node {
 	}
 
 	public Collection<Segment> getOutNeighbours() {
+		
+	
+		
 		return outNeighbours;
 	}
 

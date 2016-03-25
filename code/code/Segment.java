@@ -42,6 +42,16 @@ public class Segment {
 			g.drawLine(p.x, p.y, q.x, q.y);
 		}
 	}
+
+	public Node getStart() {
+		return start;
+	}
+
+	public Node getEnd() {
+		return end;
+	}
+	
+	
 	
 }
 
