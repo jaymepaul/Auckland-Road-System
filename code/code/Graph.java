@@ -29,6 +29,7 @@ public class Graph {
 	Node highlightedNode, startNode, endNode;
 	Collection<Road> highlightedRoads = new HashSet<>();
 	Collection<Segment> highlightedSegments = new HashSet<>();
+	Collection<Node> articulationPoints = new HashSet<>();
 	
 	public Graph(File nodes, File roads, File segments, File polygons) {
 		this.nodes = Parser.parseNodes(nodes, this);
@@ -78,7 +79,11 @@ public class Graph {
 			g2.setColor(Color.RED);
 			endNode.draw(g2, screen, origin, scale);
 		}
-		
+		if(articulationPoints != null){
+			g2.setColor(Color.GREEN);
+			for(Node n : articulationPoints)
+				n.draw(g2, screen, origin, scale);					//Highlight Articulation Points
+		}
 	}
 
 	public void setHighlight(Node node) {
@@ -114,6 +119,10 @@ public class Graph {
 		this.startNode = start;
 		this.endNode = end;
 		this.highlightedSegments = segs;
+	}
+
+	public void setHighlightNodes(HashSet<Node> articulationPoints) {
+		this.articulationPoints = articulationPoints;
 	}
 	
 }

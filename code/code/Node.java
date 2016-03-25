@@ -14,7 +14,7 @@ import java.util.Set;
  * 
  * @author tony
  */
-public class Node {
+public class Node implements Comparable{
 
 	public final int nodeID;
 	public final Location location;
@@ -23,9 +23,12 @@ public class Node {
 	private Collection<Segment> inNeighbours;
 	private Collection<Segment> outNeighbours;
 	
-	private boolean visited;
+	private boolean visited;						//A* Search Variables
 	private Node pathFrom; 
 	private double cost;
+	
+	private int depth;								//Articulation Points Variables
+	private int reachBack;
 	
 	public Node(int nodeID, double lat, double lon) {
 		this.nodeID = nodeID;
@@ -87,10 +90,21 @@ public class Node {
 	}
 
 	public Collection<Segment> getOutNeighbours() {
-		
-	
-		
 		return outNeighbours;
+	}
+	
+	public List<Node> getNeighbours(){
+		
+		List<Node> list = new ArrayList<Node>();
+		
+		for(Segment s : getOutNeighbours()){
+			if(s.start.nodeID == this.nodeID)
+				list.add(s.end);
+			else if(s.end.nodeID == this.nodeID)
+				list.add(s.start);
+		}
+		
+		return list;
 	}
 
 	public boolean isVisited() {
@@ -116,6 +130,31 @@ public class Node {
 	public void setCost(double cost) {
 		this.cost = cost;
 	}
+
+	public int getDepth() {
+		return depth;
+	}
+
+	public void setDepth(int depth) {
+		this.depth = depth;
+	}
+
+	public int getReachBack() {
+		return reachBack;
+	}
+
+	public void setReachBack(int reachBack) {
+		this.reachBack = reachBack;
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		
+		Node n = (Node) o;
+		
+		return n.getDepth() - this.depth;
+	}
+	
 	
 	
 }

@@ -51,6 +51,12 @@ public class Mapper extends GUI {
 	// our data structures.
 	private Graph graph;
 	private Trie trie;
+	
+	//Articulation Points
+	private HashSet<Node> articulationPoints;
+	private Stack<StackElement> activationStack;
+	
+	private int INF = (int)Double.POSITIVE_INFINITY;
 
 	@Override
 	protected void redraw(Graphics g) {
@@ -84,27 +90,11 @@ public class Mapper extends GUI {
 			graph.setHighlight(closest);
 			getTextOutputArea().setText(closest.toString());
 		}
+		
+		//TEST
+		findArticulationPoints();
 	}
 	
-	@Override
-	protected void findShortestPath(String origin, String destination) {
-		
-		Node start = graph.nodes.get(Integer.parseInt(origin));			//Currently operating based on NodeID's
-		Node end = graph.nodes.get(Integer.parseInt(destination));		
-		
-		LinkedHashMap<Segment, Double> path = AStarSearch(start, end);	//RoadName + Destination to Goal
-				
-		StringBuilder sb = new StringBuilder();
-		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
-		"Start At Intersection: "+start.nodeID+"	Distance To Goal: "+calcHeuristic(start, end)+"\n");
-		for(Map.Entry<Segment, Double> e : path.entrySet())
-			sb.append("Street: " + e.getKey().road.name + "	Distance To Goal: " + e.getValue() +"\n");
-		sb.append("REACHED END GOAL!");
-		
-		getTextOutputArea().setText(sb.toString());
-		graph.setHighlightPath(path, start, end);
-		
-	}
 
 	@Override
 	protected void onSearch() {
@@ -185,6 +175,26 @@ public class Mapper extends GUI {
 		scale = 1;
 	}
 	
+	@Override
+	protected void findShortestPath(String origin, String destination) {
+		
+		Node start = graph.nodes.get(Integer.parseInt(origin));			//Currently operating based on NodeID's
+		Node end = graph.nodes.get(Integer.parseInt(destination));		
+		
+		LinkedHashMap<Segment, Double> path = AStarSearch(start, end);	//RoadName + Destination to Goal
+				
+		StringBuilder sb = new StringBuilder();
+		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
+		"Start At Intersection: "+start.nodeID+"	Distance To Goal: "+calcHeuristic(start, end)+"\n");
+		for(Map.Entry<Segment, Double> e : path.entrySet())
+			sb.append("Street: " + e.getKey().road.name + "	Distance To Goal: " + e.getValue() +"\n");
+		sb.append("REACHED END GOAL!");
+		
+		getTextOutputArea().setText(sb.toString());
+		graph.setHighlightPath(path, start, end);
+		
+	}
+	
 	/** A* Search, finds the shortest path from the origin to the destination
 	 * Uses Fringe and Sets to keep track of neighbors 
 	 * 
@@ -250,6 +260,85 @@ public class Mapper extends GUI {
 
 		return path;
 
+	}
+	
+	/**Finds all Articulation Points on the graph - Iteratively
+	 * 
+	 * @return HashSet<Node> articulation points*/
+	public void findArticulationPoints(){
+		
+		articulationPoints = new HashSet<Node>();
+		activationStack = new Stack<StackElement>();
+		
+		//===========================INTIALIZE=============================
+		for(Node n : graph.nodes.values())
+			n.setDepth(INF);
+		
+		Node start = graph.nodes.get(10526);
+		start.setDepth(0);
+		int numSubTrees = 0;
+		
+		for(Node nhb : start.getNeighbours()){
+			if(nhb.getDepth() == INF){
+				iterArtPts(nhb, start);
+				numSubTrees++;
+			}
+		}
+		
+		if(numSubTrees > 1)
+			articulationPoints.add(start);
+		
+		//===========================INTIALIZE=============================
+		
+		//Highlight Points on Graph
+		graph.setHighlightNodes(articulationPoints);
+	}
+	
+	public void iterArtPts(Node firstNode, Node root){
+		
+		//Push First Node
+		activationStack.push(new StackElement(firstNode, root, 1, 0, null));	//DEPTH - 0, REACH - 1
+		
+		Node node, child = null;
+		StackElement elem = null;
+		while(!activationStack.isEmpty()){
+			
+			elem = activationStack.peek();
+			node = elem.getNode();
+			
+			if(elem.getChildren() == null){
+				
+				node.setDepth(elem.getDepth());
+				elem.setReach(elem.getDepth());
+				elem.setChildren(new PriorityQueue<Node>());
+				
+				for(Node nhb: node.getNeighbours()){
+					if(nhb != elem.getParent())
+						elem.getChildren().add(nhb);				//FIRST TIME
+				}
+				
+			}
+			
+			else if(!elem.getChildren().isEmpty()){
+				
+				child = elem.getChildren().poll();
+				
+				if(child.getDepth() < INF)
+					elem.setReach(Math.min(elem.getReach(), child.getDepth()));
+				else
+					activationStack.push(new StackElement(child, elem.getParent(), node.getDepth()+1, 0, null));		//CHILDREN TO PROCESS
+			}
+		
+			else
+				if(node != firstNode){
+					
+					if(elem.getReach() >= elem.getParent().getDepth())
+						articulationPoints.add(elem.getParent());
+						
+					elem.getParent().setReachBack(Math.min(elem.getParent().getReachBack(), elem.getReach()));
+				}
+				activationStack.pop();																				//LAST TIME
+		}
 	}
 	
 	private boolean canReachDest(Node node, Node destination){
