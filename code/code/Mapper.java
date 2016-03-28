@@ -274,7 +274,7 @@ public class Mapper extends GUI {
 		for(Node n : graph.nodes.values())
 			n.setDepth(INF);
 		
-		Node start = graph.nodes.get(10526);
+		Node start = graph.nodes.get(14473);
 		start.setDepth(0);
 		int numSubTrees = 0;
 		
