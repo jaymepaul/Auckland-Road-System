@@ -21,7 +21,9 @@ public class Node implements Comparable{
 	public final Collection<Segment> segments;
 
 	private Collection<Segment> inNeighbours;
-	private Collection<Segment> outNeighbours;
+	private Collection<Segment> outNeighbours;		//Edges Coming out of Node
+	
+	private Collection<Node> neighbours;			//Direct Neighbors of Node
 	
 	private boolean visited;						//A* Search Variables
 	private Node pathFrom; 
@@ -40,6 +42,8 @@ public class Node implements Comparable{
 		
 		this.inNeighbours = new ArrayList<Segment>();
 		this.outNeighbours = new ArrayList<Segment>();
+		
+		this.neighbours = new ArrayList<Node>();
 	}
 
 	public void addSegment(Segment seg) {
@@ -93,18 +97,15 @@ public class Node implements Comparable{
 		return outNeighbours;
 	}
 	
-	public List<Node> getNeighbours(){
+	public Collection<Node> getNeighbours(){
 		
-		List<Node> list = new ArrayList<Node>();
-		
-		for(Segment s : getOutNeighbours()){
+		for(Segment s : outNeighbours){
 			if(s.start.nodeID == this.nodeID)
-				list.add(s.end);
+				neighbours.add(s.end);
 			else if(s.end.nodeID == this.nodeID)
-				list.add(s.start);
+				neighbours.add(s.start);
 		}
-		
-		return list;
+		return neighbours;
 	}
 
 	public boolean isVisited() {

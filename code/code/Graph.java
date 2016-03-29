@@ -25,16 +25,20 @@ public class Graph {
 	Map<Integer, Road> roads;
 	// just some collection of Segments.
 	Collection<Segment> segments;
-
-	Node highlightedNode, startNode, endNode;
+	// restrictions
+	Collection<Restriction> restrictions;
+	
 	Collection<Road> highlightedRoads = new HashSet<>();
 	Collection<Segment> highlightedSegments = new HashSet<>();
 	Collection<Node> articulationPoints = new HashSet<>();
 	
-	public Graph(File nodes, File roads, File segments, File polygons) {
+	Node highlightedNode, startNode, endNode;			//A* Variables
+	
+	public Graph(File nodes, File roads, File segments, File polygons, File restrictions) {
 		this.nodes = Parser.parseNodes(nodes, this);
 		this.roads = Parser.parseRoads(roads, this);
 		this.segments = Parser.parseSegments(segments, this);
+		this.restrictions = Parser.parseRestrictions(restrictions, this);
 	}
 
 	public void draw(Graphics g, Dimension screen, Location origin, double scale) {

@@ -91,8 +91,6 @@ public class Mapper extends GUI {
 			getTextOutputArea().setText(closest.toString());
 		}
 		
-		//TEST
-		findArticulationPoints();
 	}
 	
 
@@ -168,8 +166,8 @@ public class Mapper extends GUI {
 	}
 
 	@Override
-	protected void onLoad(File nodes, File roads, File segments, File polygons) {
-		graph = new Graph(nodes, roads, segments, polygons);
+	protected void onLoad(File nodes, File roads, File segments, File polygons, File restrictions) {
+		graph = new Graph(nodes, roads, segments, polygons, restrictions);
 		trie = new Trie(graph.roads.values());
 		origin = new Location(-250, 250); // close enough
 		scale = 1;
@@ -292,6 +290,13 @@ public class Mapper extends GUI {
 		
 		//Highlight Points on Graph
 		graph.setHighlightNodes(articulationPoints);
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("Articulation Points: \n");
+		for(Node art: articulationPoints)
+			sb.append("NodeID: "+art.nodeID+ "	Location: "+art.location.x+","+art.location.y+"\n");
+		getTextOutputArea().setText(sb.toString());
+		
 	}
 	
 	public void iterArtPts(Node firstNode, Node root){

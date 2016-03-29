@@ -73,7 +73,7 @@ public class SquaresExample extends GUI {
 	}
 
 	@Override
-	protected void onLoad(File nodes, File roads, File segments, File polygons) {
+	protected void onLoad(File nodes, File roads, File segments, File polygons, File rest) {
 		getTextOutputArea().setText("example doesn't load any files.");
 	}
 
@@ -111,6 +111,14 @@ public class SquaresExample extends GUI {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	protected void findArticulationPoints() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
 }
 
 // code for COMP261 assignments

@@ -75,6 +75,11 @@ public abstract class GUI {
 	 * Uses The A* Algorithm to find the shortest path.
 	 */
 	protected abstract void findShortestPath(String origin, String destination);
+	
+	/**
+	 * Is called to find all the articulation points in the graph.
+	 */
+	protected abstract void findArticulationPoints();
 
 	/**
 	 * Is called whenever a navigation button is pressed. An instance of the
@@ -96,9 +101,11 @@ public abstract class GUI {
 	 *            a File for roadSeg-roadID-length-nodeID-nodeID-coords.tab
 	 * @param polygons
 	 *            a File for polygon-shapes.mp
+	 * @param restrictions
+	 * 			  a File for restrictions.tab
 	 */
 	protected abstract void onLoad(File nodes, File roads, File segments,
-			File polygons);
+			File polygons, File restrictions);
 
 	// here are some useful methods you'll need.
 
@@ -166,6 +173,7 @@ public abstract class GUI {
 	private static final String ROADS_FILENAME = "roadID-roadInfo.tab";
 	private static final String SEGS_FILENAME = "roadSeg-roadID-length-nodeID-nodeID-coords.tab";
 	private static final String POLYS_FILENAME = "polygon-shapes.mp";
+	private static final String REST_FILENAME = "restrictions.tab";
 
 	/*
 	 * In Swing, everything is a component; buttons, graphics panes, tool tips,
@@ -219,7 +227,7 @@ public abstract class GUI {
 		JButton load = new JButton("Load");
 		load.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
-				File nodes = null, roads = null, segments = null, polygons = null;
+				File nodes = null, roads = null, segments = null, polygons = null, rest = null;
 
 				// set up the file chooser
 				fileChooser.setCurrentDirectory(new File("."));
@@ -242,6 +250,8 @@ public abstract class GUI {
 							segments = f;
 						} else if (f.getName().equals(POLYS_FILENAME)) {
 							polygons = f;
+						} else if (f.getName().equals(REST_FILENAME)) {
+							rest = f;
 						}
 					}
 
@@ -252,7 +262,7 @@ public abstract class GUI {
 								"Directory does not contain correct files",
 								"Error", JOptionPane.ERROR_MESSAGE);
 					} else {
-						onLoad(nodes, roads, segments, polygons);
+						onLoad(nodes, roads, segments, polygons, rest);
 						redraw();
 					}
 				}
@@ -312,6 +322,14 @@ public abstract class GUI {
 			public void actionPerformed(ActionEvent ev) {
 				
 				findShortestPath(searchOrigin.getText(), searchDestination.getText());
+				redraw();
+			}
+		});
+		
+		JButton findArtPts = new JButton("Find Articulation Points");			//Find Path Button
+		findArtPts.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				findArticulationPoints();
 				redraw();
 			}
 		});
@@ -406,6 +424,7 @@ public abstract class GUI {
 		controls.add(Box.createRigidArea(new Dimension(5, 0)));
 		controls.add(search);
 		
+		controls.add(findArtPts);				//Add Find ArtPts button
 		controls.add(findPath);					//Add Find Path button
 		controls.add(new JLabel("Origin: "));
 		controls.add(searchOrigin);				//Add Search TextBoxes to GUI
