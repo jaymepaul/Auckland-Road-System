@@ -4,12 +4,17 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * This represents the data structure storing all the roads, nodes, and
@@ -29,8 +34,10 @@ public class Graph {
 	Collection<Restriction> restrictions;
 	
 	Collection<Road> highlightedRoads = new HashSet<>();
-	Collection<Segment> highlightedSegments = new HashSet<>();
-	Collection<Node> articulationPoints = new HashSet<>();
+	Collection<Segment> highlightedSegments = new LinkedList<>();
+	Collection<Node> articulationPoints = new LinkedList<>();
+	
+	List<List<Node>> subNodes = new ArrayList<List<Node>>();
 	
 	Node highlightedNode, startNode, endNode;			//A* Variables
 	
@@ -39,6 +46,7 @@ public class Graph {
 		this.roads = Parser.parseRoads(roads, this);
 		this.segments = Parser.parseSegments(segments, this);
 		this.restrictions = Parser.parseRestrictions(restrictions, this);
+		subNodes = findAllSubGraphs();
 	}
 
 	public void draw(Graphics g, Dimension screen, Location origin, double scale) {
@@ -125,8 +133,84 @@ public class Graph {
 		this.highlightedSegments = segs;
 	}
 
-	public void setHighlightNodes(HashSet<Node> articulationPoints) {
+	public void setHighlightNodes(List<Node> articulationPoints) {
 		this.articulationPoints = articulationPoints;
+	}
+	
+	public List<List<Node>> findAllSubGraphs(){
+		
+		//Breadth First Search
+		List<List<Node>> subNds = new ArrayList<List<Node>>();
+		
+		int counter = 0, MAX_NODES = nodes.size();
+		int INF = (int)Double.POSITIVE_INFINITY;
+		
+		for(Node n : nodes.values()){
+			n.setDist(INF);
+			n.setParent(null);
+		}
+		
+		while(counter != MAX_NODES){
+				
+				Node root = getNewNode(subNds);		//GetNode not within range
+				Queue<Node> queue = new LinkedList<Node>();
+				List<Node> subN = new ArrayList<Node>();
+				
+				root.setDist(0);
+				queue.add(root);
+				
+				Node cur = null;
+				while(!queue.isEmpty()){
+					
+					cur = queue.poll();
+					subN.add(cur);
+					counter++;
+					
+					for(Node nhb: cur.getNeighbours()){
+						if(nhb.getDist() == INF){
+							nhb.setDist(cur.getDist()+1);
+							nhb.setParent(cur);
+							queue.offer(nhb);
+						}
+					}
+				}
+				//System.out.println("Adding NEW SET OF NODES	" + counter );
+				subNds.add(subN);				//Add to Collection of SubNodes
+				
+		}
+		return subNds;
+	}
+
+	/**Get a Node not within the collection of subNodes*/
+	public Node getNewNode(List<List<Node>> subNodes) {
+		
+		Node node = null;
+		
+		if(subNodes.size() == 0)
+			node = nodes.get(14392);
+		else if(subNodes.size() > 0){
+			outer:
+			for(List<Node> col : subNodes){
+				for(Node nb : nodes.values()){		//If this node is not in list of BFS-SubNodes then
+					if(!col.contains(nb)){			//It must be a disconnected Node, run BFS on this Node
+						node = nb;
+						break outer;
+					}
+				}
+			}
+		}
+		
+		return node;
+	}
+
+	public List<Node> getDisconnectedNodes() {
+		
+		List<Node> discNodes = new ArrayList<Node>();
+		
+		for(List<Node> list : subNodes)
+			discNodes.add(list.get(0));
+		
+		return discNodes;
 	}
 	
 }

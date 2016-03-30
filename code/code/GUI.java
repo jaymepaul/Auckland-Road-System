@@ -86,6 +86,8 @@ public abstract class GUI {
 	 * Move enum is passed, representing the button clicked by the user.
 	 */
 	protected abstract void onMove(Move m);
+	
+	protected abstract void reset();
 
 	/**
 	 * Is called when the user has successfully selected a directory to load the
@@ -197,6 +199,7 @@ public abstract class GUI {
 	private JTextField searchDestination;
 	private JFileChooser fileChooser;
 	
+	private boolean toggleArtPts = true;
 	private int mouseCounter = 0;
 	private MouseAdapter mouseHandle;
 
@@ -329,8 +332,17 @@ public abstract class GUI {
 		JButton findArtPts = new JButton("Find Articulation Points");			//Find Path Button
 		findArtPts.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
-				findArticulationPoints();
-				redraw();
+				
+				if(toggleArtPts){
+					findArticulationPoints();
+					redraw();
+					toggleArtPts = false;
+				}
+				else if(!toggleArtPts){
+					reset();
+					redraw();
+					toggleArtPts = true;
+				}
 			}
 		});
 

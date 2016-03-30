@@ -3,14 +3,31 @@ import java.util.PriorityQueue;
 
 public class StackElement {
 
-	private Node node, parent;
+	private Node node;
+	private StackElement parent;
 	private int reach, depth;
 	private PriorityQueue<Node> children;
 	
-	public StackElement(Node node, Node parent, int reach, int depth, PriorityQueue<Node> children){
+	/**Primary Constructor, creates a new StackElement that contains..
+	 * 
+	 * @param Node node - graph Node to be processed
+	 * @param int reach - reachBack value of this Node
+	 * @param StackElement parent - parent StackElement that contains Node to not be visited & reach update*/
+	public StackElement(Node node, int reach, StackElement parent){
 		this.node = node;
-		this.parent = parent;
 		this.reach = reach;
+		this.parent = parent;
+		this.depth = parent.getDepth();
+		this.children = parent.getChildren();
+	}
+	
+	/**Alternative Constructor, creates a new StackElement based of..
+	 * 
+	 * @param Node node - parent Node
+	 * @param int depth - depth of this Node if visited via this StackElem
+	 * @param PriorityQueue<Node> children - Unvisited neighbors to be processed*/
+	public StackElement(Node node, int depth, PriorityQueue<Node> children, boolean alt){
+		this.node = node;
 		this.depth = depth;
 		this.children = children;
 	}
@@ -23,11 +40,11 @@ public class StackElement {
 		this.node = node;
 	}
 
-	public Node getParent() {
+	public StackElement getParent() {
 		return parent;
 	}
 
-	public void setParent(Node parent) {
+	public void setParent(StackElement parent) {
 		this.parent = parent;
 	}
 
@@ -54,6 +71,9 @@ public class StackElement {
 	public void setChildren(PriorityQueue<Node> children) {
 		this.children = children;
 	}
+
+	
+
 	
 	
 	

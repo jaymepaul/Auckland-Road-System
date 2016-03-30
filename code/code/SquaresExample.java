@@ -118,6 +118,12 @@ public class SquaresExample extends GUI {
 		
 	}
 
+	@Override
+	protected void reset() {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }
 

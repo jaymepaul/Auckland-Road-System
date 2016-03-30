@@ -127,28 +127,30 @@ public class Parser {
 		
 		Set<Restriction> rest = new HashSet<Restriction>();
 		
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(restrictions));
-			br.readLine(); // throw away the top line of the file.
-			String line;
+		if(restrictions!=null){
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(restrictions));
+				br.readLine(); // throw away the top line of the file.
+				String line;
 
-			while ((line = br.readLine()) != null) {
-				String[] tokens = line.split("[\t]+");
+				while ((line = br.readLine()) != null) {
+					String[] tokens = line.split("[\t]+");
 
-				int nodeID1 = asInt(tokens[0]);
-				int roadID1 = asInt(tokens[1]);
-				int nodeID = asInt(tokens[2]);
-				int roadID2 = asInt(tokens[3]);
-				int nodeID2 = asInt(tokens[4]);
+					int nodeID1 = asInt(tokens[0]);
+					int roadID1 = asInt(tokens[1]);
+					int nodeID = asInt(tokens[2]);
+					int roadID2 = asInt(tokens[3]);
+					int nodeID2 = asInt(tokens[4]);
 
-				Restriction restr = new Restriction(nodeID1, roadID1, nodeID, roadID2, nodeID2);
-				rest.add(restr);
-				
+					Restriction restr = new Restriction(nodeID1, roadID1, nodeID, roadID2, nodeID2);
+					rest.add(restr);
+					
+				}
+
+				br.close();
+			} catch (IOException e) {
+				throw new RuntimeException("file reading failed.");
 			}
-
-			br.close();
-		} catch (IOException e) {
-			throw new RuntimeException("file reading failed.");
 		}
 		
 		return rest;

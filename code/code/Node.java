@@ -14,7 +14,7 @@ import java.util.Set;
  * 
  * @author tony
  */
-public class Node implements Comparable{
+public class Node implements Comparable<Node>{
 
 	public final int nodeID;
 	public final Location location;
@@ -29,8 +29,13 @@ public class Node implements Comparable{
 	private Node pathFrom; 
 	private double cost;
 	
-	private int depth;								//Articulation Points Variables
-	private int reachBack;
+	private int depth;								
+	private int reachBack;							//Articulation Points Variables
+	
+	private int dist;
+	private Node parent;							//Breadth First Search Variables
+	
+	private String label;
 	
 	public Node(int nodeID, double lat, double lon) {
 		this.nodeID = nodeID;
@@ -147,12 +152,35 @@ public class Node implements Comparable{
 	public void setReachBack(int reachBack) {
 		this.reachBack = reachBack;
 	}
+	
+	
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+	
+	public int getDist() {
+		return dist;
+	}
+
+	public void setDist(int dist) {
+		this.dist = dist;
+	}
+
+	public Node getParent() {
+		return parent;
+	}
+
+	public void setParent(Node parent) {
+		this.parent = parent;
+	}
 
 	@Override
-	public int compareTo(Object o) {
-		
-		Node n = (Node) o;
-		
+	public int compareTo(Node n) {
 		return n.getDepth() - this.depth;
 	}
 	

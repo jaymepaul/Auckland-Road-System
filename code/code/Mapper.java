@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -53,7 +54,7 @@ public class Mapper extends GUI {
 	private Trie trie;
 	
 	//Articulation Points
-	private HashSet<Node> articulationPoints;
+	private List<Node> articulationPoints;
 	private Stack<StackElement> activationStack;
 	
 	private int INF = (int)Double.POSITIVE_INFINITY;
@@ -176,88 +177,22 @@ public class Mapper extends GUI {
 	@Override
 	protected void findShortestPath(String origin, String destination) {
 		
-		Node start = graph.nodes.get(Integer.parseInt(origin));			//Currently operating based on NodeID's
+		Node start = graph.nodes.get(Integer.parseInt(origin));			
 		Node end = graph.nodes.get(Integer.parseInt(destination));		
 		
-		LinkedHashMap<Segment, Double> path = AStarSearch(start, end);	//RoadName + Destination to Goal
+		AStarSearch aStar = new AStarSearch(graph, start, end);			
+		LinkedHashMap<Segment, Double> path = aStar.search();			//Perform AStar Search
 				
 		StringBuilder sb = new StringBuilder();
 		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
 		"Start At Intersection: "+start.nodeID+"	Distance To Goal: "+calcHeuristic(start, end)+"\n");
 		for(Map.Entry<Segment, Double> e : path.entrySet())
-			sb.append("Street: " + e.getKey().road.name + "	Distance To Goal: " + e.getValue() +"\n");
-		sb.append("REACHED END GOAL!");
+			sb.append("Street: " + e.getKey().road.name + "	Distance To Goal: " + e.getValue() +"km \n");
+		sb.append("REACHED END GOAL!");									
 		
 		getTextOutputArea().setText(sb.toString());
-		graph.setHighlightPath(path, start, end);
+		graph.setHighlightPath(path, start, end);						//Highlight and Display Path
 		
-	}
-	
-	/** A* Search, finds the shortest path from the origin to the destination
-	 * Uses Fringe and Sets to keep track of neighbors 
-	 * 
-	 * @param Node origin, Node destination*/
-	public LinkedHashMap<Segment, Double> AStarSearch(Node origin, Node destination){
-		
-		System.out.println("PERFORMING A* SEARCH..");
-		System.out.println("ORIGIN ID: " + origin.nodeID + "	DEST ID: " + destination.nodeID);
-		
-		LinkedHashMap<Segment, Double> path = new LinkedHashMap<Segment, Double>();
-		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
-		double totalDist = calcHeuristic(origin,destination);
-		
-		//Initialize all Nodes: Visited-False, PathFrom-Null
-		for(Node n : graph.nodes.values()){
-			n.setVisited(false);
-			n.setPathFrom(null);
-		}
-		
-		//Enqueue Start Node
-		fringe.offer(new FringeNode(origin, null, 0, calcHeuristic(origin, destination)));
-		
-		while (!fringe.isEmpty()) {
-
-			FringeNode fn = fringe.poll(); 						
-			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, DISCONNECTED, WORKING - 14655, 15152
-			
-			displayInfo(fn, totalDist);				//Display Info
-			if(fn.getParent()!=null)	
-				path.put(graph.getSegmentFromPoints(fn.getParent(), fn.getNode()), fn.getDistToGoal());
-			
-			if (!node.isVisited()) {
-				node.setVisited(true);
-				node.setPathFrom(fn.getParent());
-				node.setCost(fn.getCostToHere());
-			}
-
-			if (node.equals(destination)) {
-				System.out.println("REACHED END GOAL!");
-				break;
-			}
-
-			Node to = null;
-			
-			for (Segment s : node.getOutNeighbours()) { 				//Add Neighbors to Fringe
-				
-				if(node.nodeID == s.start.nodeID)
-					to = s.end;
-				else if(node.nodeID != s.start.nodeID)			//StartID does not equal previous/reverse
-					to = s.start;	
-				
-				if (!to.isVisited()) {
-					//Check if this path is admissible and consistent					//SPECIAL CASE: DEAD END/BACKTRACK
-					double costToNeigh = fn.getCostToHere() + s.length;						//Calculate Cost to here + edge weight from here to neighbor
-					double estTotal = costToNeigh + calcHeuristic(to, destination);			//Calculate total estimate with heuristic
-					
-					FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
-					f.setDistToGoal(calcHeuristic(to, destination));
-					fringe.offer(f);
-				}
-			}	
-		}
-
-		return path;
-
 	}
 	
 	/**Finds all Articulation Points on the graph - Iteratively
@@ -265,27 +200,9 @@ public class Mapper extends GUI {
 	 * @return HashSet<Node> articulation points*/
 	public void findArticulationPoints(){
 		
-		articulationPoints = new HashSet<Node>();
-		activationStack = new Stack<StackElement>();
-		
-		//===========================INTIALIZE=============================
-		for(Node n : graph.nodes.values())
-			n.setDepth(INF);
-		
-		Node start = graph.nodes.get(14473);
-		start.setDepth(0);
-		int numSubTrees = 0;
-		
-		for(Node nhb : start.getNeighbours()){
-			if(nhb.getDepth() == INF){
-				iterArtPts(nhb, start);
-				numSubTrees++;
-			}
-		}
-		
-		if(numSubTrees > 1)
-			articulationPoints.add(start);
-		
+		IterArtPts artPts = new IterArtPts(graph);
+		articulationPoints = artPts.getArticulationPoints();			//Find Articulation Points
+
 		//===========================INTIALIZE=============================
 		
 		//Highlight Points on Graph
@@ -297,101 +214,6 @@ public class Mapper extends GUI {
 			sb.append("NodeID: "+art.nodeID+ "	Location: "+art.location.x+","+art.location.y+"\n");
 		getTextOutputArea().setText(sb.toString());
 		
-	}
-	
-	public void iterArtPts(Node firstNode, Node root){
-		
-		//Push First Node
-		activationStack.push(new StackElement(firstNode, root, 1, 0, null));	//DEPTH - 0, REACH - 1
-		
-		Node node, child = null;
-		StackElement elem = null;
-		while(!activationStack.isEmpty()){
-			
-			elem = activationStack.peek();
-			node = elem.getNode();
-			
-			if(elem.getChildren() == null){
-				
-				node.setDepth(elem.getDepth());
-				elem.setReach(elem.getDepth());
-				elem.setChildren(new PriorityQueue<Node>());
-				
-				for(Node nhb: node.getNeighbours()){
-					if(nhb != elem.getParent())
-						elem.getChildren().add(nhb);				//FIRST TIME
-				}
-				
-			}
-			
-			else if(!elem.getChildren().isEmpty()){
-				
-				child = elem.getChildren().poll();
-				
-				if(child.getDepth() < INF)
-					elem.setReach(Math.min(elem.getReach(), child.getDepth()));
-				else
-					activationStack.push(new StackElement(child, elem.getParent(), node.getDepth()+1, 0, null));		//CHILDREN TO PROCESS
-			}
-		
-			else
-				if(node != firstNode){
-					
-					if(elem.getReach() >= elem.getParent().getDepth())
-						articulationPoints.add(elem.getParent());
-						
-					elem.getParent().setReachBack(Math.min(elem.getParent().getReachBack(), elem.getReach()));
-				}
-				activationStack.pop();																				//LAST TIME
-		}
-	}
-	
-	private boolean canReachDest(Node node, Node destination){
-		
-		boolean canReach = false;
-		
-//		if(){
-//			
-//		}			//can we reach our destination from this node? - find all paths to node, articulation points
-		
-		return canReach;
-	}
-	
-	private void displayInfo(FringeNode fn, double totalDist) {
-		
-		Node from = fn.getParent();
-		Node to = fn.getNode();
-		double cost = fn.getCostToHere();
-		double totalCostToGoal = fn.getTotalCostToGoal();
-		
-		if(from == null){
-			System.out.println(getRoadNameFromPoints(from, to) + "	TotalCostToGoal : "+ totalCostToGoal+"	Distance to Goal: " 
-						+ fn.getDistToGoal() + "	TotalDist: " + totalDist);
-		}
-		else if(from!=null){
-			System.out.println("Street Name: " + getRoadNameFromPoints(from, to) + "	TotalCostToGoal : "+ totalCostToGoal+
-					"	Distance to Goal: " + fn.getDistToGoal() + "	FROM: " + fn.getParent().nodeID + "	TO: " + to.nodeID + "	TotalDist: " + totalDist);
-		}
-			
-		
-	}
-
-	private String getRoadNameFromPoints(Node from, Node neighbor) {
-		
-		String name = null;
-		
-		if(from == null)
-			name = "START: " + neighbor.nodeID;
-		else if(from!=null){
-			for(Segment s : graph.segments){
-				if(s.start.nodeID == from.nodeID && s.end.nodeID == neighbor.nodeID ||
-						s.start.nodeID == neighbor.nodeID && s.end.nodeID == from.nodeID){
-					name = s.road.name;
-				}
-			}	
-		}
-		
-		return name;
 	}
 
 	/**Returns the Euclidean distance between the current node and the end destination
@@ -429,6 +251,9 @@ public class Mapper extends GUI {
 		new Mapper();
 	}
 
+	public void reset(){
+		graph.articulationPoints = null;
+	}
 	
 }
 
