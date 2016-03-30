@@ -80,20 +80,6 @@ public class Node implements Comparable<Node>{
 		return str.substring(0, str.length() - 2);
 	}
 	
-	public double estimate(Node origin, Node destination, Collection<Segment> segments){
-		
-		double estimate = 0;
-		
-		int originID = origin.nodeID;
-		int destID = destination.nodeID;
-		
-		for(Segment s : segments){
-			
-		}
-		
-		return estimate;
-	}
-
 	public Collection<Segment> getInNeighbours() {
 		return inNeighbours;
 	}

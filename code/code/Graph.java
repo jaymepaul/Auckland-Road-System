@@ -46,7 +46,8 @@ public class Graph {
 		this.roads = Parser.parseRoads(roads, this);
 		this.segments = Parser.parseSegments(segments, this);
 		this.restrictions = Parser.parseRestrictions(restrictions, this);
-		subNodes = findAllSubGraphs();
+		
+		findAllSubGraphs();
 	}
 
 	public void draw(Graphics g, Dimension screen, Location origin, double scale) {
@@ -116,9 +117,7 @@ public class Graph {
 				segment = s;
 			}
 		}
-		
 		return segment;
-		
 	}
 
 	public void setHighlightPath(LinkedHashMap<Segment, Double> path, Node start, Node end) {
@@ -137,11 +136,9 @@ public class Graph {
 		this.articulationPoints = articulationPoints;
 	}
 	
-	public List<List<Node>> findAllSubGraphs(){
+	public void findAllSubGraphs(){
 		
 		//Breadth First Search
-		List<List<Node>> subNds = new ArrayList<List<Node>>();
-		
 		int counter = 0, MAX_NODES = nodes.size();
 		int INF = (int)Double.POSITIVE_INFINITY;
 		
@@ -152,57 +149,61 @@ public class Graph {
 		
 		while(counter != MAX_NODES){
 				
-				Node root = getNewNode(subNds);		//GetNode not within range
-				Queue<Node> queue = new LinkedList<Node>();
-				List<Node> subN = new ArrayList<Node>();
+			Node root = getNewNode();							//Get a disconnected Node, perform BFS
+			Queue<Node> queue = new LinkedList<Node>();
+			List<Node> subN = new ArrayList<Node>();
 				
-				root.setDist(0);
-				queue.add(root);
+			root.setDist(0);
+			queue.add(root);
 				
-				Node cur = null;
-				while(!queue.isEmpty()){
+			Node cur = null;
+			while(!queue.isEmpty()){
 					
-					cur = queue.poll();
-					subN.add(cur);
-					counter++;
+				cur = queue.poll();
+				subN.add(cur);
+				counter++;
 					
-					for(Node nhb: cur.getNeighbours()){
-						if(nhb.getDist() == INF){
-							nhb.setDist(cur.getDist()+1);
-							nhb.setParent(cur);
-							queue.offer(nhb);
-						}
-					}
-				}
-				//System.out.println("Adding NEW SET OF NODES	" + counter );
-				subNds.add(subN);				//Add to Collection of SubNodes
-				
-		}
-		return subNds;
-	}
-
-	/**Get a Node not within the collection of subNodes*/
-	public Node getNewNode(List<List<Node>> subNodes) {
-		
-		Node node = null;
-		
-		if(subNodes.size() == 0)
-			node = nodes.get(14392);
-		else if(subNodes.size() > 0){
-			outer:
-			for(List<Node> col : subNodes){
-				for(Node nb : nodes.values()){		//If this node is not in list of BFS-SubNodes then
-					if(!col.contains(nb)){			//It must be a disconnected Node, run BFS on this Node
-						node = nb;
-						break outer;
+				for(Node nhb: cur.getNeighbours()){
+					if(nhb.getDist() == INF){
+						nhb.setDist(cur.getDist()+1);
+						nhb.setParent(cur);
+						queue.offer(nhb);
 					}
 				}
 			}
+			subNodes.add(subN);				//Add to Collection of SubNodes	
+		}
+	}
+
+	/**Gets a Node that is disconnected from the graph
+	 * 
+	 * @return Node - disconnected Node to be processed*/
+	public Node getNewNode() {
+		
+		Node node = null;
+		
+		Set<Node> tmpNodes = new HashSet<Node>(); 
+		for(Node n : nodes.values())
+			tmpNodes.add(n);						//Copy Set of Nodes
+		
+		if(subNodes.size() == 0)
+			node = nodes.get(14392);				//Arbitrary Start Node
+		else if(subNodes.size() > 0){
+			for(List<Node> col : subNodes)
+				tmpNodes.removeAll(col);			//Difference between subNodes set and full set of Nodes
+		}
+		
+		for(Node nb : tmpNodes){
+			node = nb;
+			break;
 		}
 		
 		return node;
 	}
 
+	/**Returns a list of all disconnected Nodes
+	 * 
+	 * @return List<Node> - list of disconnected nodes*/
 	public List<Node> getDisconnectedNodes() {
 		
 		List<Node> discNodes = new ArrayList<Node>();

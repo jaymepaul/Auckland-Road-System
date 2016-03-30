@@ -55,9 +55,7 @@ public class Mapper extends GUI {
 	
 	//Articulation Points
 	private List<Node> articulationPoints;
-	private Stack<StackElement> activationStack;
-	
-	private int INF = (int)Double.POSITIVE_INFINITY;
+
 
 	@Override
 	protected void redraw(Graphics g) {
