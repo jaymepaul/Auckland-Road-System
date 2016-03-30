@@ -47,7 +47,7 @@ public class Graph {
 		this.segments = Parser.parseSegments(segments, this);
 		this.restrictions = Parser.parseRestrictions(restrictions, this);
 		
-		findAllSubGraphs();
+		findAllSubGraphs();			//Creates a List of List of Nodes that each represent a component of the graph
 	}
 
 	public void draw(Graphics g, Dimension screen, Location origin, double scale) {
@@ -212,6 +212,21 @@ public class Graph {
 			discNodes.add(list.get(0));
 		
 		return discNodes;
+	}
+	
+	/**Checks if start Node and end Node are within the same component of the Graph
+	 * 
+	 * @return boolean - valid/invalid route*/
+	public boolean checkRoute(Node start, Node end){
+		
+		boolean valid = false;
+		
+		for(List<Node> list : subNodes){
+			if(list.contains(start) && list.contains(end))		//Check if both Nodes are in one component of the graph, I.e. NOT DISCONNECTED
+				valid = true;
+		}
+		
+		return valid;
 	}
 	
 }

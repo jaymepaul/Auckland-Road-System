@@ -21,7 +21,6 @@ public class AStarSearch {
 		
 		LinkedHashMap<Segment, Double> path = new LinkedHashMap<Segment, Double>();
 		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
-		double totalDist = calcHeuristic(origin,destination);
 		
 		//Initialize all Nodes: Visited-False, PathFrom-Null
 		for(Node n : graph.nodes.values()){
@@ -37,7 +36,7 @@ public class AStarSearch {
 			FringeNode fn = fringe.poll(); 						
 			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, DISCONNECTED, WORKING - 14655, 15152
 			
-			if(fn.getParent()!=null)	
+			if(fn.getParent()!=null)				//Add to Path
 				path.put(graph.getSegmentFromPoints(fn.getParent(), fn.getNode()), fn.getDistToGoal());
 			
 			if (!node.isVisited()) {
@@ -53,15 +52,18 @@ public class AStarSearch {
 			
 			for (Segment s : node.getOutNeighbours()) { 				//Add Neighbors to Fringe
 				
-				if(node.nodeID == s.start.nodeID)
+				if(node.nodeID == s.start.nodeID)				
 					to = s.end;
 				else if(node.nodeID != s.start.nodeID)			//StartID does not equal previous/reverse
 					to = s.start;	
 				
+				//Exception: Check if valid one-way
+//				if(s.road.oneWay == 1)		//1 = Oneway, 0 not
+				
 				if (!to.isVisited()) {
 					//Check if this path is admissible and consistent					//SPECIAL CASE: DEAD END/BACKTRACK
-					double costToNeigh = fn.getCostToHere() + s.length;						//Calculate Cost to here + edge weight from here to neighbor
-					double estTotal = costToNeigh + calcHeuristic(to, destination);			//Calculate total estimate with heuristic
+					double costToNeigh = fn.getCostToHere() + s.length;					//Calculate Cost to here + edge weight from here to neighbor
+					double estTotal = costToNeigh + calcHeuristic(to, destination);		//Calculate total estimate with heuristic
 					
 					FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
 					f.setDistToGoal(calcHeuristic(to, destination));

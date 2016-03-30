@@ -178,18 +178,22 @@ public class Mapper extends GUI {
 		Node start = graph.nodes.get(Integer.parseInt(origin));			
 		Node end = graph.nodes.get(Integer.parseInt(destination));		
 		
-		AStarSearch aStar = new AStarSearch(graph, start, end);			
-		LinkedHashMap<Segment, Double> path = aStar.search();			//Perform AStar Search
-				
-		StringBuilder sb = new StringBuilder();
-		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
-		"Start At Intersection: "+start.nodeID+"	Distance To Goal: "+calcHeuristic(start, end)+"\n");
-		for(Map.Entry<Segment, Double> e : path.entrySet())
-			sb.append("Street: " + e.getKey().road.name + "	Distance To Goal: " + e.getValue() +"km \n");
-		sb.append("REACHED END GOAL!");									
-		
-		getTextOutputArea().setText(sb.toString());
-		graph.setHighlightPath(path, start, end);						//Highlight and Display Path
+		//Exception: Check for Disconnected Route/Path
+		if(graph.checkRoute(start, end)){
+			
+			AStarSearch aStar = new AStarSearch(graph, start, end);			
+			LinkedHashMap<Segment, Double> path = aStar.search();			//Perform AStar Search
+					
+			getTextOutputArea().setText(getPathTextOutput(path, start, end));
+			graph.setHighlightPath(path, start, end);						//Highlight and Display Path
+		}
+		else if(!graph.checkRoute(start, end)){
+			StringBuilder sb = new StringBuilder();
+			sb.append("Invalid Route! " + "	Start: "+start.nodeID + "	End: "+end.nodeID+"\n");
+			sb.append("Disconnected Path! \n");
+			getTextOutputArea().setText(sb.toString());
+		}
+
 		
 	}
 	
@@ -212,6 +216,50 @@ public class Mapper extends GUI {
 			sb.append("NodeID: "+art.nodeID+ "	Location: "+art.location.x+","+art.location.y+"\n");
 		getTextOutputArea().setText(sb.toString());
 		
+	}
+	
+	public String getPathTextOutput(LinkedHashMap<Segment, Double> path, Node start, Node end){
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
+		"Start At Intersection: "+start.nodeID+"	Total Distance To Goal: "+calcHeuristic(start, end)+" km \n");
+		
+		String name = null;
+		double dist = 0, tmpDist = 0;
+		int counter = 1;
+		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
+		
+		for(Map.Entry<Segment, Double> e : path.entrySet()){			//Get First Element
+			name = e.getKey().road.name;
+			break;
+		}
+		
+		for(Map.Entry<Segment, Double> e : path.entrySet()){			//Eliminate Duplicate Road Names/Add Dist
+			
+			//Find name get max distance
+			if(e.getKey().road.name == name){
+				if(e.getValue() > dist)					//Find Max Dist for Road
+					dist = e.getValue();
+			}
+			else if(e.getKey().road.name != name){
+				
+				textPath.put(name, dist);
+				
+				name = e.getKey().road.name;
+				dist = e.getValue();
+				
+				if(counter == path.size())
+					textPath.put(name, dist);
+			}
+			counter++;
+		}
+		
+		for(Map.Entry<String, Double> e : textPath.entrySet())
+			sb.append("Street: " + e.getKey() + "	Distance To Goal: " + e.getValue() +" km \n");
+		
+		sb.append("REACHED END GOAL!");					
+		
+		return sb.toString();
 	}
 
 	/**Returns the Euclidean distance between the current node and the end destination
