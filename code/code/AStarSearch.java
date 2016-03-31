@@ -110,21 +110,43 @@ public class AStarSearch {
 		}
 		
 		List<Segment> segs = new ArrayList<>(path.keySet());		//List of actual segments
-		for(int i = 0; i < segs.size(); i++){
+		
+		Node start = null;
+		Node end = null;
+		if(segs.get(0).start.nodeID == origin.nodeID){
+			start = segs.get(0).start;
+			end = segs.get(0).end;
+		}
+		else if(segs.get(0).start.nodeID != origin.nodeID){
+			start = segs.get(0).end;
+			end = segs.get(0).start;
+		}															//Sort Start and End
+		for(int i = 1; i < segs.size(); i++){
 			
-			if(!segs.get(i).start.isPathVisited()){
-				segs.get(i).start.setPathVisited(true);
-				segs.get(i).start.setPos(i);
+			//Establish start and end
+			//i.e. start = .. end = ..
+			if(end.nodeID == segs.get(i).start.nodeID){
+				start = segs.get(i).start;
+				end = segs.get(i).end;
 			}
-			else{													//if visited
+			else if(end.nodeID != segs.get(i).start.nodeID){
+				start = segs.get(i).end;
+				end = segs.get(i).start;
+			}
+			
+			if(!start.isPathVisited()){
+				start.setPathVisited(true);
+				start.setPos(i);
+			}
+			else if(start.isPathVisited()){													//if visited
 				//check previous instance and delete from there to here
 				//i.e. i = 9, i = 7
-				int j = segs.get(i).start.getPos();
+				int j = start.getPos();
 				while(j<i){	
 					segs.remove(j);			//Remove Segment from previous position to here
 					j++;
 				}
-				segs.get(i).start.setPos(i);	//Set new Pos
+				start.setPos(i);	//Set new Pos
 			}
 		}
 		
