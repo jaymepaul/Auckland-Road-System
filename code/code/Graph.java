@@ -34,7 +34,7 @@ public class Graph {
 	Collection<Restriction> restrictions;
 	
 	Collection<Road> highlightedRoads = new HashSet<>();
-	Collection<Segment> highlightedSegments = new LinkedList<>();
+	Collection<Segment> highlightedSegments = new ArrayList<>();
 	Collection<Node> articulationPoints = new LinkedList<>();
 	
 	List<List<Node>> subNodes = new ArrayList<List<Node>>();
@@ -120,16 +120,10 @@ public class Graph {
 		return segment;
 	}
 
-	public void setHighlightPath(LinkedHashMap<Segment, Double> path, Node start, Node end) {
-		
-		HashSet<Segment> segs = new HashSet<Segment>();
-		
-		for(Segment s : path.keySet())
-			segs.add(s);
-		
+	public void setHighlightPath(List<Segment> path, Node start, Node end) {		
 		this.startNode = start;
 		this.endNode = end;
-		this.highlightedSegments = segs;
+		this.highlightedSegments = path;
 	}
 
 	public void setHighlightNodes(List<Node> articulationPoints) {

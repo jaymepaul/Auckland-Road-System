@@ -182,7 +182,7 @@ public class Mapper extends GUI {
 		if(graph.checkRoute(start, end)){
 			
 			AStarSearch aStar = new AStarSearch(graph, start, end);			
-			LinkedHashMap<Segment, Double> path = aStar.search();			//Perform AStar Search
+			List<Segment> path = aStar.search();							//Perform AStar Search
 					
 			getTextOutputArea().setText(getPathTextOutput(path, start, end));
 			graph.setHighlightPath(path, start, end);						//Highlight and Display Path
@@ -220,53 +220,38 @@ public class Mapper extends GUI {
 		getTextOutputArea().setText(sb.toString());
 		
 	}
-	
-	public String getPathTextOutput(LinkedHashMap<Segment, Double> path, Node start, Node end){
+		
+	/**Eliminates Duplicate Road Names, Gets Max Distance for each Road*/
+	public String getPathTextOutput(List<Segment> path, Node start, Node end){
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
 		"Start At Intersection: "+start.nodeID+"	Total Distance To Goal: "+calcHeuristic(start, end)+" km \n");
 		
 		String name = null;
-		double dist = 0, tmpDist = 0;
-		int counter = 1;
+		double dist = 0;
 		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
 		
-		for(Map.Entry<Segment, Double> e : path.entrySet()){			//Get First Element
-			name = e.getKey().road.name;
-			break;
-		}
+		name = path.get(0).road.name;
 		
-		//name = path.get(0).road.name;
-		
-//		for(Segment s : path){
-//			if(s.road.name == name)
-//				dist = s.getPathDistance();
-//			else if(s.road.name != name){
-//				textPath.add()
-//			}
-//		}
-		
-		for(Map.Entry<Segment, Double> e : path.entrySet()){			//Eliminate Duplicate Road Names/Add Dist
+		for(int i = 0; i < path.size(); i++){	
 			
-			//Find name get max distance
-			if(e.getKey().road.name == name){
-				if(e.getValue() > dist)					//Find Max Dist for Road
-					dist = e.getValue();
+			if(i == path.size()-1)
+				textPath.put(name, dist);
+			if(path.get(i).road.name == name){
+				if(path.get(i).getPathDistance() > dist)
+					dist = path.get(i).getPathDistance();
 			}
-			else if(e.getKey().road.name != name){
+			else if(path.get(i).road.name != name){
 				
 				textPath.put(name, dist);
-				
-				name = e.getKey().road.name;
-				dist = e.getValue();
-				
-				if(counter == path.size())
-					textPath.put(name, dist);
-			}
-			counter++;
-		}
 		
+				name = path.get(i).road.name;
+				dist = path.get(i).getPathDistance();
+			}
+			
+		}
+				
 		for(Map.Entry<String, Double> e : textPath.entrySet())
 			sb.append("Street: " + e.getKey() + "	Distance To Goal: " + e.getValue() +" km \n");
 		

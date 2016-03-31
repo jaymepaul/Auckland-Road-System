@@ -20,12 +20,12 @@ public class AStarSearch {
 	 *  heuristic estimate. I.e. Not only shortest edge weight but also lowest
 	 *  distance estimate from node to goal. 
 	 * 
-	 * @return LinkedHashMap<Segment, Double> - shortest path of segments and distances*/
-	public LinkedHashMap<Segment, Double> search(){
+	 * @return List<Segment> path - shortest path of segments and distances*/
+	public List<Segment> search(){
 		
-		LinkedHashMap<Segment, Double> path = new LinkedHashMap<Segment, Double>();
+		//LinkedHashMap<Segment, Double> path = new LinkedHashMap<Segment, Double>();
 		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
-		List<Segment> pathL = new ArrayList<Segment>();
+		List<Segment> path = new ArrayList<Segment>();
 		
 		//Initialize all Nodes: Visited-False, PathFrom-Null
 		for(Node n : graph.nodes.values()){
@@ -50,9 +50,7 @@ public class AStarSearch {
 				Segment seg = graph.getSegmentFromPoints(fn.getParent(), fn.getNode());
 				seg.setPathDistance(fn.getDistToGoal());
 				
-				pathL.add(seg);
-				path.put(seg, fn.getDistToGoal());
-				
+				path.add(seg);
 			}
 			if (!node.isVisited()) {				//Initialize if not visited - mark as visited, set pathFrom and cost
 				node.setVisited(true);
@@ -60,10 +58,9 @@ public class AStarSearch {
 				node.setCost(fn.getCostToHere());
 			}
 
-			if (node.equals(destination)){ 			//END CONDITION - Reached Goal
-				path = trimPath(path);				//Ensures that only the shortest and reachable path is considered
+			if (node.equals(destination))			//END CONDITION - Reached Goal
 				break;
-			}
+			
 
 			Node to = null;
 			for (Segment s : node.getOutNeighbours()) { 		//Add Neighbors to Fringe
@@ -88,7 +85,7 @@ public class AStarSearch {
 			}	
 		}
 		
-		return path;
+		return trimPath(path);				//Ensures that only the shortest and reachable path is considered;
 	}
 	
 	/**Returns the Euclidean distance between the current node and the end destination
@@ -106,63 +103,87 @@ public class AStarSearch {
 	}
 	
 	/**Ensures that the path returned is the shortest and reachable*/
-	public LinkedHashMap<Segment,Double> trimPath(LinkedHashMap<Segment, Double> path){
+	public List<Segment> trimPath(List<Segment> path){
 		
-		int counter = 0, startID = 0, endID = 0;				//Prune path, ensure only right path exists
-		Map<Segment, Double> tmpMap = new LinkedHashMap<Segment,Double>();
-		Map<Segment, Double> tmpPath = new LinkedHashMap<Segment,Double>();
-		
-		for(Map.Entry<Segment, Double> e : path.entrySet()){		//Copy of Original Path - Avoid Concurrency
-			e.getKey().start.setPathVisited(false);
-			e.getKey().end.setPathVisited(false);
-			tmpPath.put(e.getKey(), e.getValue());
+		for(Segment s : path){
+			s.start.setPathVisited(false);
+			s.start.setPos(0);
+			s.end.setPathVisited(false);
+			s.end.setPos(0);
 		}
-		
-		List<Segment> segs = new ArrayList<>(path.keySet());		//List of actual segments
 		
 		Node start = null;
 		Node end = null;
-		if(segs.get(0).start.nodeID == origin.nodeID){
-			start = segs.get(0).start;
-			end = segs.get(0).end;
+		if(path.get(0).start.nodeID == origin.nodeID){
+			start = path.get(0).start;
+			end = path.get(0).end;
 		}
-		else if(segs.get(0).start.nodeID != origin.nodeID){
-			start = segs.get(0).end;
-			end = segs.get(0).start;
-		}															//Sort Start and End
-		for(int i = 1; i < segs.size(); i++){
-			
-			//Establish start and end
-			//i.e. start = .. end = ..
-			if(end.nodeID == segs.get(i).start.nodeID){
-				start = segs.get(i).start;
-				end = segs.get(i).end;
-			}
-			else if(end.nodeID != segs.get(i).start.nodeID){
-				start = segs.get(i).end;
-				end = segs.get(i).start;
-			}
-			
-			if(!start.isPathVisited()){
-				start.setPathVisited(true);
-				start.setPos(i);
-			}
-			else if(start.isPathVisited()){													//if visited
-				//check previous instance and delete from there to here
-				//i.e. i = 9, i = 7
-				int j = start.getPos();
-				while(j<i){	
-					segs.remove(j);			//Remove Segment from previous position to here
-					j++;
-				}
-				start.setPos(i);	//Set new Pos
-			}
-		}
+		else if(path.get(0).start.nodeID != origin.nodeID){
+			start = path.get(0).end;
+			end = path.get(0).start;
+		}															//Sort Start and End - WORKS
+					
 		
-		for(Map.Entry<Segment, Double> e : tmpPath.entrySet()){
+		for(int i = 1; i < path.size(); i++){
 			
-			if(!segs.contains(e.getKey()))			//If not in actual list then remove
-				path.remove(e.getKey());
+			if(path.get(i).start.nodeID == end.nodeID){				//IDEAL CASE
+				start = path.get(i).start;		
+				end = path.get(i).end;
+				
+				if(!start.isPathVisited()){
+					start.setPathVisited(true);
+					start.setPos(i);
+				}
+				else if(start.isPathVisited()){
+					int j = start.getPos();
+					int removeAt = start.getPos();
+					while(j < i){
+						path.remove(removeAt);
+						j++;
+					}
+					int offset = i - removeAt;
+					i = i - offset;
+					start.setPos(i);
+				}
+			}
+			else if(path.get(i).start.nodeID != end.nodeID && path.get(i).end.nodeID == end.nodeID){		//ALT CASE: End Node = End Node
+				
+				start = path.get(i).end;
+				end = path.get(i).start;
+				
+				if(!start.isPathVisited()){
+					start.setPathVisited(true);
+					start.setPos(i);
+				}
+				else if(start.isPathVisited()){
+					int j = start.getPos();
+					int removeAt = start.getPos();
+					while(j < i){
+						path.remove(removeAt);
+						j++;
+					}
+					int offset = i - removeAt;
+					i = i - offset;
+					start.setPos(i);
+				}
+			}
+			else{
+				
+				start = path.get(i).start;
+				end = path.get(i).end;
+				
+				if(start.isPathVisited()){
+					int j = start.getPos();
+					int removeAt = start.getPos();
+					while(j < i){
+						path.remove(removeAt);
+						j++;
+					}
+					int offset = i - removeAt;
+					i = i - offset;
+					start.setPos(i);
+				}
+			}
 		}
 		
 		return path;
@@ -176,11 +197,11 @@ public class AStarSearch {
 		double totalCostToGoal = fn.getTotalCostToGoal();
 		
 		if(from == null){
-			System.out.println(getRoadNameFromPoints(from, to) + "	TotalCostToGoal : "+ totalCostToGoal+"	Distance to Goal: " 
+			System.out.println(getRoadNameFromPoints(from, to) +"	Distance to Goal: " 
 						+ fn.getDistToGoal() + "	TotalDist: " + totalDist);
 		}
 		else if(from!=null){
-			System.out.println("Street Name: " + getRoadNameFromPoints(from, to) + "	TotalCostToGoal : "+ totalCostToGoal+
+			System.out.println("Street Name: " + getRoadNameFromPoints(from, to) +
 					"	Distance to Goal: " + fn.getDistToGoal() + "	FROM: " + fn.getParent().nodeID + "	TO: " + to.nodeID + "	TotalDist: " + totalDist);
 		}
 			
