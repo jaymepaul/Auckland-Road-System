@@ -186,12 +186,15 @@ public class Mapper extends GUI {
 					
 			getTextOutputArea().setText(getPathTextOutput(path, start, end));
 			graph.setHighlightPath(path, start, end);						//Highlight and Display Path
+			
 		}
 		else if(!graph.checkRoute(start, end)){
+			
 			StringBuilder sb = new StringBuilder();
 			sb.append("Invalid Route! " + "	Start: "+start.nodeID + "	End: "+end.nodeID+"\n");
 			sb.append("Disconnected Path! \n");
 			getTextOutputArea().setText(sb.toString());
+			
 		}
 
 		

@@ -1,5 +1,5 @@
 
-public class FringeNode implements Comparable {
+public class FringeNode implements Comparable<FringeNode> {
 
 	private Node node;
 	private Node parent;
@@ -15,10 +15,7 @@ public class FringeNode implements Comparable {
 		this.costToHere = costToHere;
 		this.totEstCost = totEstCost;
 		
-		if(costToHere == 0)
-			this.distToGoal = totEstCost;
-		
-		this.totalCostToGoal = totEstCost;
+		this.totalCostToGoal = totEstCost - costToHere;		//Purely Heuristic
 	}
 
 	
@@ -91,19 +88,18 @@ public class FringeNode implements Comparable {
 	}
 
 	@Override
-	public int compareTo(Object o) {
-
-		FringeNode fn = (FringeNode) o;
-		int comp = 0;
+	public int compareTo(FringeNode fn) {
 		
-		if(fn.totEstCost < totEstCost)
-			comp = 1;
-		else if(fn.totEstCost > totEstCost)
-			comp = -1;
-		else 
-			comp = 0;
+		int cmp = 0;
 		
-		return comp;
+		if (totalCostToGoal > fn.totalCostToGoal)
+			cmp = 1;
+		else if(totalCostToGoal < fn.totalCostToGoal)
+			cmp = -1;
+		else
+			cmp = 0;
+		
+		return cmp;
 	}
 	
 	

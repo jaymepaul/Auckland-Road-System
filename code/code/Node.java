@@ -36,6 +36,8 @@ public class Node implements Comparable<Node>{
 	private Node parent;							//Breadth First Search Variables
 	
 	private String label;
+	private boolean pathVisited;
+	private int pos;
 	
 	public Node(int nodeID, double lat, double lon) {
 		this.nodeID = nodeID;
@@ -84,6 +86,9 @@ public class Node implements Comparable<Node>{
 		return inNeighbours;
 	}
 
+	/**Returns a Collection of Edges coming out of this Node
+	 * 
+	 * @return Collection<Segment> - edges out of this node*/
 	public Collection<Segment> getOutNeighbours() {
 		return outNeighbours;
 	}
@@ -169,6 +174,25 @@ public class Node implements Comparable<Node>{
 	public int compareTo(Node n) {
 		return n.getDepth() - this.depth;
 	}
+
+	public boolean isPathVisited() {
+		return pathVisited;
+	}
+
+	public void setPathVisited(boolean pathVisited) {
+		this.pathVisited = pathVisited;
+	}
+
+	public int getPos() {
+		return pos;
+	}
+
+	public void setPos(int pos) {
+		this.pos = pos;
+	}
+
+	
+
 	
 	
 	

@@ -1,4 +1,7 @@
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 public class AStarSearch {
@@ -13,10 +16,11 @@ public class AStarSearch {
 	}
 	
 	/** A* Search, finds the shortest path from the origin to the destination
-	 * Uses Fringe and Sets to keep track of neighbors 
+	 *  Operates by choosing the paths that consist of the most promising 
+	 *  heuristic estimate. I.e. Not only shortest edge weight but also lowest
+	 *  distance estimate from node to goal. 
 	 * 
-	 * @param Node origin, Node destination
-	 * @return LinkedHashMap<Segment, Double> - shortest path*/
+	 * @return LinkedHashMap<Segment, Double> - shortest path of segments and distances*/
 	public LinkedHashMap<Segment, Double> search(){
 		
 		LinkedHashMap<Segment, Double> path = new LinkedHashMap<Segment, Double>();
@@ -33,28 +37,31 @@ public class AStarSearch {
 		
 		while (!fringe.isEmpty()) {
 
-			FringeNode fn = fringe.poll(); 						
-			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, DISCONNECTED, WORKING - 14655, 15152
+			FringeNode fn = fringe.poll(); 			//Poll the most promising Node - based of lowest heuristic estimate			
+			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, 15150-15510 , DISCONNECTED, WORKING - 14655, 15152
 			
-			if(fn.getParent()!=null)				//Add to Path
+			displayInfo(fn, calcHeuristic(origin, destination));
+			
+			if(fn.getParent()!=null)				//Exception: Initial Start Node
 				path.put(graph.getSegmentFromPoints(fn.getParent(), fn.getNode()), fn.getDistToGoal());
 			
-			if (!node.isVisited()) {
+			if (!node.isVisited()) {				//Initialize if not visited - mark as visited, set pathFrom and cost
 				node.setVisited(true);
 				node.setPathFrom(fn.getParent());
 				node.setCost(fn.getCostToHere());
 			}
 
-			if (node.equals(destination)) 
+			if (node.equals(destination)){ 			//END CONDITION - Reached Goal
+				path = trimPath(path);				//Ensures that only the shortest and reachable path is considered
 				break;
+			}
 
 			Node to = null;
-			
-			for (Segment s : node.getOutNeighbours()) { 				//Add Neighbors to Fringe
+			for (Segment s : node.getOutNeighbours()) { 		//Add Neighbors to Fringe
 				
 				if(node.nodeID == s.start.nodeID)				
 					to = s.end;
-				else if(node.nodeID != s.start.nodeID)			//StartID does not equal previous/reverse
+				else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
 					to = s.start;	
 				
 				//Exception: Check if valid one-way
@@ -87,6 +94,47 @@ public class AStarSearch {
 				Math.pow(current.location.y - destination.location.y, 2));
 		
 		return distance;
+	}
+	
+	/**Ensures that the path returned is the shortest and reachable*/
+	public LinkedHashMap<Segment,Double> trimPath(LinkedHashMap<Segment, Double> path){
+		
+		int counter = 0, startID = 0, endID = 0;				//Prune path, ensure only right path exists
+		Map<Segment, Double> tmpMap = new LinkedHashMap<Segment,Double>();
+		Map<Segment, Double> tmpPath = new LinkedHashMap<Segment,Double>();
+		
+		for(Map.Entry<Segment, Double> e : path.entrySet()){		//Copy of Original Path - Avoid Concurrency
+			e.getKey().start.setPathVisited(false);
+			e.getKey().end.setPathVisited(false);
+			tmpPath.put(e.getKey(), e.getValue());
+		}
+		
+		List<Segment> segs = new ArrayList<>(path.keySet());		//List of actual segments
+		for(int i = 0; i < segs.size(); i++){
+			
+			if(!segs.get(i).start.isPathVisited()){
+				segs.get(i).start.setPathVisited(true);
+				segs.get(i).start.setPos(i);
+			}
+			else{													//if visited
+				//check previous instance and delete from there to here
+				//i.e. i = 9, i = 7
+				int j = segs.get(i).start.getPos();
+				while(j<i){	
+					segs.remove(j);			//Remove Segment from previous position to here
+					j++;
+				}
+				segs.get(i).start.setPos(i);	//Set new Pos
+			}
+		}
+		
+		for(Map.Entry<Segment, Double> e : tmpPath.entrySet()){
+			
+			if(!segs.contains(e.getKey()))			//If not in actual list then remove
+				path.remove(e.getKey());
+		}
+		
+		return path;
 	}
 	
 	private void displayInfo(FringeNode fn, double totalDist) {
