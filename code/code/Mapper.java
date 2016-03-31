@@ -237,6 +237,16 @@ public class Mapper extends GUI {
 			break;
 		}
 		
+		//name = path.get(0).road.name;
+		
+//		for(Segment s : path){
+//			if(s.road.name == name)
+//				dist = s.getPathDistance();
+//			else if(s.road.name != name){
+//				textPath.add()
+//			}
+//		}
+		
 		for(Map.Entry<Segment, Double> e : path.entrySet()){			//Eliminate Duplicate Road Names/Add Dist
 			
 			//Find name get max distance

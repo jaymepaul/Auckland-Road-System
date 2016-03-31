@@ -25,12 +25,15 @@ public class AStarSearch {
 		
 		LinkedHashMap<Segment, Double> path = new LinkedHashMap<Segment, Double>();
 		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
+		List<Segment> pathL = new ArrayList<Segment>();
 		
 		//Initialize all Nodes: Visited-False, PathFrom-Null
 		for(Node n : graph.nodes.values()){
 			n.setVisited(false);
 			n.setPathFrom(null);
 		}
+		for(Segment s : graph.segments)
+			s.setPathDistance(0);
 		
 		//Enqueue Start Node
 		fringe.offer(new FringeNode(origin, null, 0, calcHeuristic(origin, destination)));
@@ -42,9 +45,15 @@ public class AStarSearch {
 			
 			displayInfo(fn, calcHeuristic(origin, destination));
 			
-			if(fn.getParent()!=null)				//Exception: Initial Start Node
-				path.put(graph.getSegmentFromPoints(fn.getParent(), fn.getNode()), fn.getDistToGoal());
-			
+			if(fn.getParent()!=null){				//Exception: Initial Start Node
+				
+				Segment seg = graph.getSegmentFromPoints(fn.getParent(), fn.getNode());
+				seg.setPathDistance(fn.getDistToGoal());
+				
+				pathL.add(seg);
+				path.put(seg, fn.getDistToGoal());
+				
+			}
 			if (!node.isVisited()) {				//Initialize if not visited - mark as visited, set pathFrom and cost
 				node.setVisited(true);
 				node.setPathFrom(fn.getParent());

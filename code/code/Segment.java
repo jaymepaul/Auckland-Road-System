@@ -15,6 +15,8 @@ public class Segment {
 	public final Node start, end;
 	public final double length;
 	public final Location[] points;
+	
+	private double pathDistance;
 
 	public Segment(Graph graph, int roadID, double length, int node1ID,
 			int node2ID, double[] coords) {
@@ -50,6 +52,16 @@ public class Segment {
 	public Node getEnd() {
 		return end;
 	}
+
+	public double getPathDistance() {
+		return pathDistance;
+	}
+
+	public void setPathDistance(double pathDistance) {
+		this.pathDistance = pathDistance;
+	}
+	
+	
 	
 	
 	
