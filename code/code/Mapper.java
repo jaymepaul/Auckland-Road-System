@@ -236,9 +236,11 @@ public class Mapper extends GUI {
 		
 		for(int i = 0; i < path.size(); i++){	
 			
-			if(i == path.size()-1)
-				textPath.put(name, dist);
 			if(path.get(i).road.name == name){
+				
+				if(i == path.size()-1)
+					textPath.put(name, dist);
+				
 				if(path.get(i).getPathDistance() > dist)
 					dist = path.get(i).getPathDistance();
 			}
