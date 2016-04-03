@@ -27,10 +27,13 @@ public class AStarSearch {
 		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
 		List<Segment> path = new ArrayList<Segment>();
 		
+		List<FringeNode> fnList = new ArrayList<FringeNode>();
+		
 		//Initialize all Nodes: Visited-False, PathFrom-Null
 		for(Node n : graph.nodes.values()){
 			n.setVisited(false);
 			n.setPathFrom(null);
+			n.setPathVisited(false);
 		}
 		for(Segment s : graph.segments)
 			s.setPathDistance(0);
@@ -41,8 +44,8 @@ public class AStarSearch {
 		while (!fringe.isEmpty()) {
 
 			FringeNode fn = fringe.poll(); 			//Poll the most promising Node - based of lowest heuristic estimate			
-			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, 15150-15510 , DISCONNECTED, WORKING - 14655, 15152
-			
+			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, 15150-15510 , 17613-11430 DISCONNECTED, WORKING - 14655, 15152
+														//FLAW AT 37368
 			displayInfo(fn, calcHeuristic(origin, destination));
 			
 			if(fn.getParent()!=null){				//Exception: Initial Start Node
@@ -51,6 +54,8 @@ public class AStarSearch {
 				seg.setPathDistance(fn.getDistToGoal());
 				
 				path.add(seg);
+				fnList.add(fn);
+				
 			}
 			if (!node.isVisited()) {				//Initialize if not visited - mark as visited, set pathFrom and cost
 				node.setVisited(true);
@@ -60,7 +65,6 @@ public class AStarSearch {
 
 			if (node.equals(destination))			//END CONDITION - Reached Goal
 				break;
-			
 
 			Node to = null;
 			for (Segment s : node.getOutNeighbours()) { 		//Add Neighbors to Fringe
@@ -85,7 +89,7 @@ public class AStarSearch {
 			}	
 		}
 		
-		return trimPath(path);				//Ensures that only the shortest and reachable path is considered;
+		return trimPath(path, fnList);				//Ensures that only the shortest and reachable path is considered;
 	}
 	
 	/**Returns the Euclidean distance between the current node and the end destination
@@ -103,90 +107,32 @@ public class AStarSearch {
 	}
 	
 	/**Ensures that the path returned is the shortest and reachable*/
-	public List<Segment> trimPath(List<Segment> path){
+	public List<Segment> trimPath(List<Segment> path, List<FringeNode> fnList){
 		
-		for(Segment s : path){
-			s.start.setPathVisited(false);
-			s.start.setPos(0);
-			s.end.setPathVisited(false);
-			s.end.setPos(0);
-		}
 		
-		Node start = null;
-		Node end = null;
-		if(path.get(0).start.nodeID == origin.nodeID){
-			start = path.get(0).start;
-			end = path.get(0).end;
-		}
-		else if(path.get(0).start.nodeID != origin.nodeID){
-			start = path.get(0).end;
-			end = path.get(0).start;
-		}															//Sort Start and End - WORKS
-					
+		List<Segment> realPath = new ArrayList<Segment>();
 		
-		for(int i = 1; i < path.size(); i++){
+		Node to = fnList.get(fnList.size()-1).getNode();
+		Node from = fnList.get(fnList.size()-1).getParent();
+		
+		//GO BACKWARDS FROM GOAL
+		for(int i = path.size()-1; i >= 0; i--){
 			
-			if(path.get(i).start.nodeID == end.nodeID){				//IDEAL CASE
-				start = path.get(i).start;		
-				end = path.get(i).end;
+			if((path.get(i).start.nodeID == from.nodeID && path.get(i).end.nodeID == to.nodeID) || 
+					(path.get(i).start.nodeID == to.nodeID && path.get(i).end.nodeID == from.nodeID)){
 				
-				if(!start.isPathVisited()){
-					start.setPathVisited(true);
-					start.setPos(i);
-				}
-				else if(start.isPathVisited()){
-					int j = start.getPos();
-					int removeAt = start.getPos();
-					while(j < i){
-						path.remove(removeAt);
-						j++;
+				realPath.add(path.get(i));
+				
+				for(FringeNode fn : fnList){
+					if(fn.getNode().nodeID == from.nodeID){
+						from = fn.getParent();
+						to = fn.getNode();
 					}
-					int offset = i - removeAt;
-					i = i - offset;
-					start.setPos(i);
-				}
-			}
-			else if(path.get(i).start.nodeID != end.nodeID && path.get(i).end.nodeID == end.nodeID){		//ALT CASE: End Node = End Node
-				
-				start = path.get(i).end;
-				end = path.get(i).start;
-				
-				if(!start.isPathVisited()){
-					start.setPathVisited(true);
-					start.setPos(i);
-				}
-				else if(start.isPathVisited()){
-					int j = start.getPos();
-					int removeAt = start.getPos();
-					while(j < i){
-						path.remove(removeAt);
-						j++;
-					}
-					int offset = i - removeAt;
-					i = i - offset;
-					start.setPos(i);
-				}
-			}
-			else{
-				
-				start = path.get(i).start;
-				end = path.get(i).end;
-				
-				if(start.isPathVisited()){
-					int j = start.getPos();
-					int removeAt = start.getPos();
-					while(j < i){
-						path.remove(removeAt);
-						j++;
-					}
-					int offset = i - removeAt;
-					i = i - offset;
-					start.setPos(i);
 				}
 			}
 		}
 		
-		return path;
+		return realPath;
 	}
 	
 	private void displayInfo(FringeNode fn, double totalDist) {

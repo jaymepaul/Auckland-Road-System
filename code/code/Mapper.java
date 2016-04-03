@@ -232,13 +232,13 @@ public class Mapper extends GUI {
 		double dist = 0;
 		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
 		
-		name = path.get(0).road.name;
+		name = path.get(path.size()-1).road.name;
 		
-		for(int i = 0; i < path.size(); i++){	
+		for(int i = path.size()-1; i >= 0; i--){	
 			
 			if(path.get(i).road.name == name){
 				
-				if(i == path.size()-1)
+				if(i == 0)
 					textPath.put(name, dist);
 				
 				if(path.get(i).getPathDistance() > dist)
@@ -250,6 +250,10 @@ public class Mapper extends GUI {
 		
 				name = path.get(i).road.name;
 				dist = path.get(i).getPathDistance();
+				
+				if(i == 0)
+					textPath.put(name, dist);
+				
 			}
 			
 		}

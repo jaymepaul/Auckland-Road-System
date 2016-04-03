@@ -37,7 +37,7 @@ public class Node implements Comparable<Node>{
 	
 	private String label;
 	private boolean pathVisited;
-	private int pos;
+	private Node nhb;
 	
 	public Node(int nodeID, double lat, double lon) {
 		this.nodeID = nodeID;
@@ -183,14 +183,15 @@ public class Node implements Comparable<Node>{
 		this.pathVisited = pathVisited;
 	}
 
-	public int getPos() {
-		return pos;
+	public Node getNhb() {
+		return nhb;
 	}
 
-	public void setPos(int pos) {
-		this.pos = pos;
+	public void setNhb(Node nhb) {
+		this.nhb = nhb;
 	}
 
+	
 	
 
 	
