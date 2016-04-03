@@ -69,13 +69,25 @@ public class AStarSearch {
 			Node to = null;
 			for (Segment s : node.getOutNeighbours()) { 		//Add Neighbors to Fringe
 				
-				if(node.nodeID == s.start.nodeID)				
-					to = s.end;
-				else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
-					to = s.start;	
+//				if(node.nodeID == s.start.nodeID)				
+//					to = s.end;
+//				else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
+//					to = s.start;	
 				
 				//Exception: Check if valid one-way
-//				if(s.road.oneWay == 1)		//1 = Oneway, 0 not
+				if(s.road.oneWay == 1){		//1 = Oneway, 0 not
+					if(s.start.nodeID == node.nodeID)				//TEST: PUTIKI ST
+						to = s.end;
+					else
+						continue;
+				}
+				else if(s.road.oneWay == 0){
+					if(node.nodeID == s.start.nodeID)				
+						to = s.end;
+					else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
+						to = s.start;
+				}
+				
 				
 				if (!to.isVisited()) {
 					//Check if this path is admissible and consistent					//SPECIAL CASE: DEAD END/BACKTRACK
