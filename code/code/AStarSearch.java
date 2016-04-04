@@ -137,16 +137,16 @@ public class AStarSearch {
 		
 		if(n.getRestrictions().size() > 0){	
 			
-			for(Restriction r : n.getRestrictions()){		//Get the right restriction
+			for(Restriction r : n.getRestrictions()){		
 				if(r.getN1().nodeID == N1.nodeID && r.getN2().nodeID == N2.nodeID && r.getN().nodeID == n.nodeID
 						&& prevSeg.road.roadID == r.getR1().roadID && curSeg.road.roadID == r.getR2().roadID){
 			
-					rest = r;
+					rest = r;				//Get the right Restriction
 				}
 			}
 			
 			if(rest != null){
-				if (rest.getN1().nodeID == N1.nodeID && rest.getN2().nodeID == N2.nodeID
+				if (rest.getN1().nodeID == N1.nodeID && rest.getN2().nodeID == N2.nodeID && rest.getN().nodeID == n.nodeID
 						&& rest.getR1().roadID == prevSeg.road.roadID && rest.getR2().roadID == curSeg.road.roadID ) {
 					restrict = true;
 					System.out.println("RESTRICTION FOUND! ");
