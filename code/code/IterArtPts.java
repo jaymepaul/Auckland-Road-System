@@ -36,7 +36,7 @@ public class IterArtPts {
 			start.setDepth(0);
 			int numSubTrees = 0;
 			
-			for(Node nhb : start.getNeighbours()){
+			for(Node nhb : start.getNeighbours()){		//For each neighbor of the subcomponent Node find the art pts
 				if(nhb.getDepth() == INF){
 					findArtPts(nhb, start);
 					numSubTrees++;

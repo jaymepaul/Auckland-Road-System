@@ -33,7 +33,6 @@ public class AStarSearch {
 		for(Node n : graph.nodes.values()){
 			n.setVisited(false);
 			n.setPathFrom(null);
-			n.setPathVisited(false);
 		}
 		for(Segment s : graph.segments)
 			s.setPathDistance(0);
@@ -69,13 +68,10 @@ public class AStarSearch {
 			Node to = null;
 			for (Segment s : node.getOutNeighbours()) { 		//Add Neighbors to Fringe
 				
-//				if(node.nodeID == s.start.nodeID)				
-//					to = s.end;
-//				else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
-//					to = s.start;	
-				
+		
 				//Exception: Check if valid one-way
 				if(s.road.oneWay == 1){		//1 = Oneway, 0 not
+					System.out.println("ONE WAY FOUND! @ "+s.road.roadID+ "	N1: "+s.start.nodeID+ "	N2: "+s.end.nodeID);
 					if(s.start.nodeID == node.nodeID)				//TEST: PUTIKI ST
 						to = s.end;
 					else
@@ -88,12 +84,14 @@ public class AStarSearch {
 						to = s.start;
 				}
 				
+				if(path.size() > 0 && isRestricted(path.get(path.size()-1), s, node))	//If this segment is restricted then consider others
+					continue;
 				
 				if (!to.isVisited()) {
 					//Check if this path is admissible and consistent					//SPECIAL CASE: DEAD END/BACKTRACK
 					double costToNeigh = fn.getCostToHere() + s.length;					//Calculate Cost to here + edge weight from here to neighbor
 					double estTotal = costToNeigh + calcHeuristic(to, destination);		//Calculate total estimate with heuristic
-					
+				
 					FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
 					f.setDistToGoal(calcHeuristic(to, destination));
 					fringe.offer(f);
@@ -117,6 +115,49 @@ public class AStarSearch {
 		
 		return distance;
 	}
+	
+	/**Returns TRUE if the segment in question has restrictions applicable to it*/
+	public boolean isRestricted(Segment prevSeg, Segment curSeg, Node n){
+		
+		boolean restrict = false;
+		Restriction rest = null;
+		
+		Node N1 = null;
+		Node N2 = null;		//CASE: Each NODE has multiple restrictions!
+		
+		if(prevSeg.start.nodeID != n.nodeID)
+			N1 = prevSeg.start;
+		else 
+			N1 = prevSeg.end;
+		
+		if(curSeg.end.nodeID != n.nodeID)
+			N2 = curSeg.end;
+		else
+			N2 = curSeg.start;
+		
+		if(n.getRestrictions().size() > 0){	
+			
+			for(Restriction r : n.getRestrictions()){		//Get the right restriction
+				if(r.getN1().nodeID == N1.nodeID && r.getN2().nodeID == N2.nodeID && r.getN().nodeID == n.nodeID
+						&& prevSeg.road.roadID == r.getR1().roadID && curSeg.road.roadID == r.getR2().roadID){
+			
+					rest = r;
+				}
+			}
+			
+			if(rest != null){
+				if (rest.getN1().nodeID == N1.nodeID && rest.getN2().nodeID == N2.nodeID
+						&& rest.getR1().roadID == prevSeg.road.roadID && rest.getR2().roadID == curSeg.road.roadID ) {
+					restrict = true;
+					System.out.println("RESTRICTION FOUND! ");
+					System.out.println("N1: " + N1.nodeID + "	N: " + n.nodeID + "	N2: " + N2.nodeID + "\n");
+				}
+			}
+		}
+		
+		return restrict;
+	}
+	
 	
 	/**Ensures that the path returned is the shortest and reachable*/
 	public List<Segment> trimPath(List<Segment> path, List<FringeNode> fnList){

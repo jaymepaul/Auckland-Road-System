@@ -1,60 +1,60 @@
 
 public class Restriction {
 
-	private int nodeID1;
-	private int roadID1;
-	private int nodeID;
-	private int roadID2;
-	private int nodeID2;
+	private Node N1;
+	private Road R1;
+	private Node N;
+	private Road R2;
+	private Node N2;
 	
-	public Restriction(int nodeID1, int roadID1, int nodeID, int roadID2, int nodeID2) {
-		this.nodeID1 = nodeID1;
-		this.roadID1 = roadID1;
-		this.nodeID = nodeID;
-		this.roadID2 = roadID2;
-		this.nodeID2 = nodeID2;
+	public Restriction(Node N1, Road R1, Node N, Road R2, Node N2) {
+		this.N1 = N1;
+		this.R1 = R1;
+		this.N = N;
+		this.R2 = R2;
+		this.N2 = N2;
 	}
 
-	public int getNodeID1() {
-		return nodeID1;
+	public Node getN1() {
+		return N1;
 	}
 
-	public void setNodeID1(int nodeID1) {
-		this.nodeID1 = nodeID1;
+	public void setN1(Node n1) {
+		N1 = n1;
 	}
 
-	public int getRoadID1() {
-		return roadID1;
+	public Road getR1() {
+		return R1;
 	}
 
-	public void setRoadID1(int roadID1) {
-		this.roadID1 = roadID1;
+	public void setR1(Road r1) {
+		R1 = r1;
 	}
 
-	public int getNodeID() {
-		return nodeID;
+	public Node getN() {
+		return N;
 	}
 
-	public void setNodeID(int nodeID) {
-		this.nodeID = nodeID;
+	public void setN(Node n) {
+		N = n;
 	}
 
-	public int getRoadID2() {
-		return roadID2;
+	public Road getR2() {
+		return R2;
 	}
 
-	public void setRoadID2(int roadID2) {
-		this.roadID2 = roadID2;
+	public void setR2(Road r2) {
+		R2 = r2;
 	}
 
-	public int getNodeID2() {
-		return nodeID2;
+	public Node getN2() {
+		return N2;
 	}
 
-	public void setNodeID2(int nodeID2) {
-		this.nodeID2 = nodeID2;
+	public void setN2(Node n2) {
+		N2 = n2;
 	}
-	
+
 	
 
 }

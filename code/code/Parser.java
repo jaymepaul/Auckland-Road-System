@@ -136,15 +136,16 @@ public class Parser {
 				while ((line = br.readLine()) != null) {
 					String[] tokens = line.split("[\t]+");
 
-					int nodeID1 = asInt(tokens[0]);
-					int roadID1 = asInt(tokens[1]);
-					int nodeID = asInt(tokens[2]);
-					int roadID2 = asInt(tokens[3]);
-					int nodeID2 = asInt(tokens[4]);
+					Node N1 = graph.nodes.get(asInt(tokens[0]));
+					Road R1 = graph.roads.get(asInt(tokens[1]));
+					Node N = graph.nodes.get(asInt(tokens[2]));
+					Road R2 = graph.roads.get(asInt(tokens[3]));
+					Node N2 = graph.nodes.get(asInt(tokens[4]));
 
-					Restriction restr = new Restriction(nodeID1, roadID1, nodeID, roadID2, nodeID2);
-					rest.add(restr);
-					
+					Restriction restriction = new Restriction(N1, R1, N, R2, N2);
+					rest.add(restriction);
+
+					N.getRestrictions().add(restriction);				//Add to set of Restrictions
 				}
 
 				br.close();

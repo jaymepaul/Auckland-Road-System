@@ -35,9 +35,8 @@ public class Node implements Comparable<Node>{
 	private int dist;
 	private Node parent;							//Breadth First Search Variables
 	
-	private String label;
-	private boolean pathVisited;
-	private Node nhb;
+	private List<Restriction> restrictions;			//Node Restriction
+							
 	
 	public Node(int nodeID, double lat, double lon) {
 		this.nodeID = nodeID;
@@ -51,6 +50,7 @@ public class Node implements Comparable<Node>{
 		this.outNeighbours = new ArrayList<Segment>();
 		
 		this.neighbours = new ArrayList<Node>();
+		this.restrictions = new ArrayList<Restriction>();
 	}
 
 	public void addSegment(Segment seg) {
@@ -144,16 +144,6 @@ public class Node implements Comparable<Node>{
 		this.reachBack = reachBack;
 	}
 	
-	
-
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
-	}
-	
 	public int getDist() {
 		return dist;
 	}
@@ -169,34 +159,19 @@ public class Node implements Comparable<Node>{
 	public void setParent(Node parent) {
 		this.parent = parent;
 	}
+	
+	public List<Restriction> getRestrictions() {
+		return restrictions;
+	}
+
+	public void setRestrictions(List<Restriction> restrictions) {
+		this.restrictions = restrictions;
+	}
 
 	@Override
 	public int compareTo(Node n) {
 		return n.getDepth() - this.depth;
-	}
-
-	public boolean isPathVisited() {
-		return pathVisited;
-	}
-
-	public void setPathVisited(boolean pathVisited) {
-		this.pathVisited = pathVisited;
-	}
-
-	public Node getNhb() {
-		return nhb;
-	}
-
-	public void setNhb(Node nhb) {
-		this.nhb = nhb;
-	}
-
-	
-	
-
-	
-	
-	
+	}	
 }
 
 // code for COMP261 assignments
