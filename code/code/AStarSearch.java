@@ -144,7 +144,7 @@ public class AStarSearch {
 			if(fn.getParent()!=null){
 
 				Segment seg = graph.getSegmentFromPoints(fn.getParent(), node);
-				seg.setPathDistance(fn.getTimeToGoal());
+				seg.setPathTime(fn.getTotalTimeCostToGoal());
 
 				timePath.add(seg);
 				fnList.add(fn);
@@ -161,10 +161,26 @@ public class AStarSearch {
 			Node to = null;
 			for(Segment s : node.getOutNeighbours()){
 
-				if(node.nodeID == s.start.nodeID)
-					to = s.end;
-				else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
-					to = s.start;
+				//======================RESTRICTIONS===========================//
+				//Exception: Check if valid one-way
+				if(s.road.oneWay == 1){		//1 = Oneway, 0 not
+					System.out.println("ONE WAY FOUND! @ "+s.road.roadID+ "	N1: "+s.start.nodeID+ "	N2: "+s.end.nodeID);
+					if(s.start.nodeID == node.nodeID)				//Ensure that to = end of segment
+						to = s.end;
+					else											//If segment doesnt conform to one-way rule, then discard
+						continue;
+				}
+				else if(s.road.oneWay == 0){
+					if(node.nodeID == s.start.nodeID)
+						to = s.end;
+					else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
+						to = s.start;
+				}
+
+				if(timePath.size() > 0 && isRestricted(timePath.get(timePath.size()-1), s, node))	//If this segment is restricted then consider others
+					continue;
+				//======================RESTRICTIONS===========================//
+
 
 				if(!to.isVisited()){
 					double costToNeigh = fn.getTimeCostToHere() + (s.length/s.road.speed);
@@ -174,13 +190,13 @@ public class AStarSearch {
 			}
 		}
 
-		return timePath;
+		return trimTimePath(timePath, fnList);
 	}
 
 
 	/**Calculates total Time heuristic estimate based on
 	 * shortest path considers speed limits and road class*/
-	public double calcTimeHeuristic(Node start, Node end){
+	public static double calcTimeHeuristic(Node start, Node end){
 
 		double time = 0;
 
@@ -193,7 +209,7 @@ public class AStarSearch {
 	/**Returns the Euclidean distance between the current node and the end destination
 	 *
 	 * @param Node current, Node destination*/
-	public double calcDistHeuristic(Node current, Node destination) {
+	public static double calcDistHeuristic(Node current, Node destination) {
 
 		double distance = 0;
 
@@ -265,6 +281,34 @@ public class AStarSearch {
 				realPath.add(path.get(i));
 
 				for(FringeNode fn : fnList){
+					if(fn.getNode().nodeID == from.nodeID){
+						from = fn.getParent();
+						to = fn.getNode();
+					}
+				}
+			}
+		}
+
+		return realPath;
+	}
+
+	public List<Segment> trimTimePath(List<Segment> path, List<FringeTimeNode> fnList){
+
+
+		List<Segment> realPath = new ArrayList<Segment>();
+
+		Node to = fnList.get(fnList.size()-1).getNode();
+		Node from = fnList.get(fnList.size()-1).getParent();
+
+		//GO BACKWARDS FROM GOAL
+		for(int i = path.size()-1; i >= 0; i--){
+
+			if((path.get(i).start.nodeID == from.nodeID && path.get(i).end.nodeID == to.nodeID) ||
+					(path.get(i).start.nodeID == to.nodeID && path.get(i).end.nodeID == from.nodeID)){
+
+				realPath.add(path.get(i));
+
+				for(FringeTimeNode fn : fnList){
 					if(fn.getNode().nodeID == from.nodeID){
 						from = fn.getParent();
 						to = fn.getNode();

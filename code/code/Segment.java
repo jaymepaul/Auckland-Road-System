@@ -6,7 +6,7 @@ import java.awt.Point;
  * an edge between two Nodes. It knows the Road it belongs to as well as the
  * Nodes it joins, and contains a series of Locations that make up the length of
  * the Segment and can be used to render it.
- * 
+ *
  * @author tony
  */
 public class Segment {
@@ -15,8 +15,9 @@ public class Segment {
 	public final Node start, end;
 	public final double length;
 	public final Location[] points;
-	
+
 	private double pathDistance;
+	private double pathTime;
 
 	public Segment(Graph graph, int roadID, double length, int node1ID,
 			int node2ID, double[] coords) {
@@ -60,11 +61,15 @@ public class Segment {
 	public void setPathDistance(double pathDistance) {
 		this.pathDistance = pathDistance;
 	}
-	
-	
-	
-	
-	
+
+	public double getPathTime() {
+		return pathTime;
+	}
+
+	public void setPathTime(double pathTime) {
+		this.pathTime = pathTime;
+	}
+
 }
 
 // code for COMP261 assignments

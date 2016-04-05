@@ -205,7 +205,7 @@ public class Mapper extends GUI {
 				aStar.setOrigin(start); aStar.setDestination(end);
 				List<Segment> timePath = aStar.searchPathTime();
 
-//				getTextOutputArea().setText(getPathTextOutput(timePath, start, end));
+				getTextOutputArea().setText(getTimePathTextOutput(timePath, start, end));
 				graph.setHighlightPath(timePath, start, end);						//Highlight and Display Path
 			}
 			else if(!graph.checkRoute(start, end)){
@@ -244,7 +244,7 @@ public class Mapper extends GUI {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
-		"Start At Intersection: "+start.nodeID+"	Total Distance To Goal: "+calcHeuristic(start, end)+" km \n");
+		"Start At Intersection: "+start.nodeID+"	Total Distance To Goal: "+ AStarSearch.calcDistHeuristic(start, end)+" km \n");
 
 		String name = null;
 		double dist = 0;
@@ -284,18 +284,48 @@ public class Mapper extends GUI {
 		return sb.toString();
 	}
 
-	/**Returns the Euclidean distance between the current node and the end destination
-	 *
-	 * @param Node current, Node destination*/
-	public double calcHeuristic(Node current, Node destination) {
+	public String getTimePathTextOutput(List<Segment> path, Node start, Node end){
 
-		double distance = 0;
+		StringBuilder sb = new StringBuilder();
+		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
+		"Start At Intersection: "+start.nodeID+ "	Total Time To Goal: "+ AStarSearch.calcTimeHeuristic(start, end)+"s \n");
 
-		//Calculate Euclidean Distance
-		distance = Math.sqrt(Math.pow(current.location.x - destination.location.x, 2) +
-				Math.pow(current.location.y - destination.location.y, 2));
+		String name = null;
+		double time = 0;
+		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
 
-		return distance;
+		name = path.get(path.size()-1).road.name;
+
+		for(int i = path.size()-1; i >= 0; i--){
+
+			if(path.get(i).road.name == name){
+
+				if(i == 0)
+					textPath.put(name, time);
+
+				if(path.get(i).getPathTime() > time)
+					time = path.get(i).getPathTime();
+			}
+			else if(path.get(i).road.name != name){
+
+				textPath.put(name, time);
+
+				name = path.get(i).road.name;
+				time = path.get(i).getPathTime();
+
+				if(i == 0)
+					textPath.put(name, time);
+
+			}
+
+		}
+
+		for(Map.Entry<String, Double> e : textPath.entrySet())
+			sb.append("Street: " + e.getKey() + "	Time To Goal: " + e.getValue() +"s \n");
+
+		sb.append("REACHED END GOAL!");
+
+		return sb.toString();
 	}
 
 	/**
