@@ -8,27 +8,28 @@ public class AStarSearch {
 
 	private Graph graph;
 	private Node origin, destination;
-	
+	public int INF = (int)Double.POSITIVE_INFINITY;
+
 	public AStarSearch(Graph graph, Node origin, Node destination){
 		this.graph = graph;
 		this.origin = origin;
 		this.destination = destination;
 	}
-	
+
 	/** A* Search, finds the shortest path from the origin to the destination
-	 *  Operates by choosing the paths that consist of the most promising 
+	 *  Operates by choosing the paths that consist of the most promising
 	 *  heuristic estimate. I.e. Not only shortest edge weight but also lowest
-	 *  distance estimate from node to goal. 
-	 * 
+	 *  distance estimate from node to goal.
+	 *
 	 * @return List<Segment> path - shortest path of segments and distances*/
 	public List<Segment> searchDist(){
-		
-		//LinkedHashMap<Segment, Double> path = new LinkedHashMap<Segment, Double>();
+
+
 		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
 		List<Segment> path = new ArrayList<Segment>();
-		
+
 		List<FringeNode> fnList = new ArrayList<FringeNode>();
-		
+
 		//Initialize all Nodes: Visited-False, PathFrom-Null
 		for(Node n : graph.nodes.values()){
 			n.setVisited(false);
@@ -36,25 +37,25 @@ public class AStarSearch {
 		}
 		for(Segment s : graph.segments)
 			s.setPathDistance(0);
-		
+
 		//Enqueue Start Node
-		fringe.offer(new FringeNode(origin, null, 0, calcHeuristic(origin, destination)));
-		
+		fringe.offer(new FringeNode(origin, null, 0, calcDistHeuristic(origin, destination)));
+
 		while (!fringe.isEmpty()) {
 
-			FringeNode fn = fringe.poll(); 			//Poll the most promising Node - based of lowest heuristic estimate			
+			FringeNode fn = fringe.poll(); 			//Poll the most promising Node - based of lowest heuristic estimate
 			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, 15150-15510 , 17613-11430 DISCONNECTED, WORKING - 14655, 15152
 														//FLAW AT 37368
-			displayInfo(fn, calcHeuristic(origin, destination));
-			
+			displayInfo(fn, calcDistHeuristic(origin, destination));
+
 			if(fn.getParent()!=null){				//Exception: Initial Start Node
-				
+
 				Segment seg = graph.getSegmentFromPoints(fn.getParent(), fn.getNode());
 				seg.setPathDistance(fn.getDistToGoal());
-				
+
 				path.add(seg);
 				fnList.add(fn);
-				
+
 			}
 			if (!node.isVisited()) {				//Initialize if not visited - mark as visited, set pathFrom and cost
 				node.setVisited(true);
@@ -67,8 +68,8 @@ public class AStarSearch {
 
 			Node to = null;
 			for (Segment s : node.getOutNeighbours()) { 		//Add Neighbors to Fringe
-				
-		
+
+
 				//Exception: Check if valid one-way
 				if(s.road.oneWay == 1){		//1 = Oneway, 0 not
 					System.out.println("ONE WAY FOUND! @ "+s.road.roadID+ "	N1: "+s.start.nodeID+ "	N2: "+s.end.nodeID);
@@ -78,82 +79,170 @@ public class AStarSearch {
 						continue;
 				}
 				else if(s.road.oneWay == 0){
-					if(node.nodeID == s.start.nodeID)				
+					if(node.nodeID == s.start.nodeID)
 						to = s.end;
 					else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
 						to = s.start;
 				}
-				
+
 				if(path.size() > 0 && isRestricted(path.get(path.size()-1), s, node))	//If this segment is restricted then consider others
 					continue;
-				
+
 				if (!to.isVisited()) {
 					//Check if this path is admissible and consistent					//SPECIAL CASE: DEAD END/BACKTRACK
 					double costToNeigh = fn.getCostToHere() + s.length;					//Calculate Cost to here + edge weight from here to neighbor
-					double estTotal = costToNeigh + calcHeuristic(to, destination);		//Calculate total estimate with heuristic
-				
+					double estTotal = costToNeigh + calcDistHeuristic(to, destination);		//Calculate total estimate with heuristic
+
 					if(to.hasLights){
 						System.out.println("Traffic Light @ "+to.nodeID);
-						estTotal += 1;		//Add Extra Cost if To Node has lights - Reduce its priority
+						estTotal += 1;		//Add Extra Cost if To Node has lights - Reduce its priority, more expensive
 					}
-					
+
 					FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
-					f.setDistToGoal(calcHeuristic(to, destination));
+					f.setDistToGoal(calcDistHeuristic(to, destination));		//NOTE: CHECK REDUNDANCY
 					fringe.offer(f);
 				}
-			}	
+			}
 		}
-		
+
 		return trimPath(path, fnList);				//Ensures that only the shortest and reachable path is considered;
 	}
-	
-	public void searchPathTime(){
-		
+
+	/**Finds the path that takes the least amount of time,
+	 * Uses a Time heuristic estimate - calculated via
+	 * finding shortest distance. Ensures that the algo
+	 * is admissible (underestimates the totalCost)
+	 *
+	 * */
+	public List<Segment> searchPathTime(){
+
+		List<Segment> timePath = new ArrayList<Segment>();
+
+		//Admissable Heuristic - Time
+		double bestToGoal = INF;
+
+		PriorityQueue<FringeTimeNode> fringe = new PriorityQueue<FringeTimeNode>();
+		List<FringeTimeNode> fnList = new ArrayList<FringeTimeNode>();
+
+		//Initialize all Nodes: Visited-False, PathFrom-Null
+		for(Node n : graph.nodes.values()){
+			n.setVisited(false);
+			n.setPathFrom(null);
+			n.setCost(0);
+		}
+
+		//Enqueue Start Node
+		fringe.offer(new FringeTimeNode(origin, null, 0, calcTimeHeuristic(origin, destination)));
+
+		while(!fringe.isEmpty()){
+
+			FringeTimeNode fn = fringe.poll();
+			Node node = fn.getNode();
+
+			if(fn.getParent()!=null){
+
+				Segment seg = graph.getSegmentFromPoints(fn.getParent(), node);
+				seg.setPathDistance(fn.getTimeToGoal());
+
+				timePath.add(seg);
+				fnList.add(fn);
+			}
+
+			if(fn.getTimeCostToHere() <= node.getCost()){
+
+				node.setPathFrom(fn.getParent());
+				node.setCost(fn.getTimeCostToHere());
+
+				if(node == destination){
+					System.out.println("Reached End Goal!");
+					break;
+				}
+
+				Node neigh = null;
+				for(Segment s : node.getOutNeighbours()){
+
+					double toNeigh = fn.getTimeCostToHere() + (s.length/s.road.speed);
+
+					if(node.nodeID == s.start.nodeID)
+						neigh = s.end;
+					else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
+						neigh = s.start;
+
+					if(toNeigh <= neigh.getCost()){
+
+						double estTotal = toNeigh + calcTimeHeuristic(neigh, destination);
+						if(estTotal < bestToGoal){
+							fringe.offer(new FringeTimeNode(neigh, node, toNeigh, estTotal));
+							if(neigh == destination)
+								bestToGoal = toNeigh;
+						}
+					}
+				}
+			}
+		}
+
+
+		return timePath;
 	}
-	
+
+	/**Calculates total Time heuristic estimate based on
+	 * shortest path considers speed limits and road class*/
+	public double calcTimeHeuristic(Node start, Node end){
+
+		double time = 0;
+
+		origin = start; destination = end;
+		List<Segment> path = searchDist();
+
+		for(Segment s : path)
+			time += (s.length/s.road.speed);
+
+		return time;
+	}
+
 	/**Returns the Euclidean distance between the current node and the end destination
-	 * 
+	 *
 	 * @param Node current, Node destination*/
-	public static double calcHeuristic(Node current, Node destination) {
-		
+	public double calcDistHeuristic(Node current, Node destination) {
+
 		double distance = 0;
-		
+
 		//Calculate Euclidean Distance
-		distance = Math.sqrt(Math.pow(current.location.x - destination.location.x, 2) + 
+		distance = Math.sqrt(Math.pow(current.location.x - destination.location.x, 2) +
 				Math.pow(current.location.y - destination.location.y, 2));
-		
+
 		return distance;
 	}
-	
+
 	/**Returns TRUE if the segment in question has restrictions applicable to it*/
 	public boolean isRestricted(Segment prevSeg, Segment curSeg, Node n){
-		
+
 		boolean restrict = false;
 		Restriction rest = null;
-		
+
 		Node N1 = null;
 		Node N2 = null;		//CASE: Each NODE has multiple restrictions!
-		
+
 		if(prevSeg.start.nodeID != n.nodeID)
 			N1 = prevSeg.start;
-		else 
+		else
 			N1 = prevSeg.end;
-		
+
 		if(curSeg.end.nodeID != n.nodeID)
 			N2 = curSeg.end;
 		else
 			N2 = curSeg.start;
-		
-		if(n.getRestrictions().size() > 0){	
-			
-			for(Restriction r : n.getRestrictions()){		
+
+		if(n.getRestrictions().size() > 0){
+
+			for(Restriction r : n.getRestrictions()){
 				if(r.getN1().nodeID == N1.nodeID && r.getN2().nodeID == N2.nodeID && r.getN().nodeID == n.nodeID
 						&& prevSeg.road.roadID == r.getR1().roadID && curSeg.road.roadID == r.getR2().roadID){
-			
+
 					rest = r;				//Get the right Restriction
 				}
 			}
-			
+
 			if(rest != null){
 				if (rest.getN1().nodeID == N1.nodeID && rest.getN2().nodeID == N2.nodeID && rest.getN().nodeID == n.nodeID
 						&& rest.getR1().roadID == prevSeg.road.roadID && rest.getR2().roadID == curSeg.road.roadID ) {
@@ -163,28 +252,28 @@ public class AStarSearch {
 				}
 			}
 		}
-		
+
 		return restrict;
 	}
-	
-	
+
+
 	/**Ensures that the path returned is the shortest and reachable*/
 	public List<Segment> trimPath(List<Segment> path, List<FringeNode> fnList){
-		
-		
+
+
 		List<Segment> realPath = new ArrayList<Segment>();
-		
+
 		Node to = fnList.get(fnList.size()-1).getNode();
 		Node from = fnList.get(fnList.size()-1).getParent();
-		
+
 		//GO BACKWARDS FROM GOAL
 		for(int i = path.size()-1; i >= 0; i--){
-			
-			if((path.get(i).start.nodeID == from.nodeID && path.get(i).end.nodeID == to.nodeID) || 
+
+			if((path.get(i).start.nodeID == from.nodeID && path.get(i).end.nodeID == to.nodeID) ||
 					(path.get(i).start.nodeID == to.nodeID && path.get(i).end.nodeID == from.nodeID)){
-				
+
 				realPath.add(path.get(i));
-				
+
 				for(FringeNode fn : fnList){
 					if(fn.getNode().nodeID == from.nodeID){
 						from = fn.getParent();
@@ -193,33 +282,33 @@ public class AStarSearch {
 				}
 			}
 		}
-		
+
 		return realPath;
 	}
-	
+
 	private void displayInfo(FringeNode fn, double totalDist) {
-		
+
 		Node from = fn.getParent();
 		Node to = fn.getNode();
 		double cost = fn.getCostToHere();
 		double totalCostToGoal = fn.getTotalCostToGoal();
-		
+
 		if(from == null){
-			System.out.println(getRoadNameFromPoints(from, to) +"	Distance to Goal: " 
+			System.out.println(getRoadNameFromPoints(from, to) +"	Distance to Goal: "
 						+ totalDist + "	TotalDist: " + totalDist);
 		}
 		else if(from!=null){
 			System.out.println("Street Name: " + getRoadNameFromPoints(from, to) +
 					"	Distance to Goal: " + fn.getDistToGoal() + "	FROM: " + fn.getParent().nodeID + "	TO: " + to.nodeID + "	TotalDist: " + totalDist);
 		}
-			
-		
+
+
 	}
 
 	private String getRoadNameFromPoints(Node from, Node neighbor) {
-		
+
 		String name = null;
-		
+
 		if(from == null)
 			name = "START: " + neighbor.nodeID;
 		else if(from!=null){
@@ -228,9 +317,9 @@ public class AStarSearch {
 						s.start.nodeID == neighbor.nodeID && s.end.nodeID == from.nodeID){
 					name = s.road.name;
 				}
-			}	
+			}
 		}
-		
+
 		return name;
 	}
 }

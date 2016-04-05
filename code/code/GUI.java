@@ -33,11 +33,11 @@ import javax.swing.text.DefaultCaret;
  * *abstract class*, which means you'll need to extend it in your own program.
  * For a simple example of how to do this, have a look at the SquaresExample
  * class.
- * 
+ *
  * This GUI uses Swing, not the first-year UI library. Swing is not the focus of
  * this course, but it would be to your benefit if you took some time to
  * understand how this class works.
- * 
+ *
  * @author tony
  */
 public abstract class GUI {
@@ -69,13 +69,13 @@ public abstract class GUI {
 	 * JTextField object that is the search box itself.
 	 */
 	protected abstract void onSearch();
-	
+
 	/**
 	 * Is called whenever the origin/destination search boxes are updates
 	 * Uses The A* Algorithm to find the shortest path - BASED ON DISTANCE.
 	 */
 	protected abstract void findShortestPath(String origin, String destination, boolean distTime);
-	
+
 	/**
 	 * Is called to find all the articulation points in the graph.
 	 */
@@ -86,7 +86,7 @@ public abstract class GUI {
 	 * Move enum is passed, representing the button clicked by the user.
 	 */
 	protected abstract void onMove(Move m);
-	
+
 	protected abstract void reset();
 
 	/**
@@ -94,7 +94,7 @@ public abstract class GUI {
 	 * data files from. File objects representing the four files of interested
 	 * are passed to the method. The fourth File, polygons, might be null if it
 	 * isn't present in the directory.
-	 * 
+	 *
 	 * @param nodes
 	 *            a File for nodeID-lat-lon.tab
 	 * @param roads
@@ -125,7 +125,7 @@ public abstract class GUI {
 	public JTextField getSearchBox() {
 		return search;
 	}
-	
+
 	public JTextField getSearchOrigin() {
 		return searchOrigin;
 	}
@@ -199,7 +199,7 @@ public abstract class GUI {
 	private JTextField searchOrigin;
 	private JTextField searchDestination;
 	private JFileChooser fileChooser;
-	
+
 	private boolean toggleArtPts = true;
 	private int mouseCounter = 0;
 	private MouseAdapter mouseHandle;
@@ -323,29 +323,29 @@ public abstract class GUI {
 				redraw();
 			}
 		});
-		
+
 		JButton findPath = new JButton("Find Path - Dist");			//Find Path Button
 		findPath.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
-				
+
 				findShortestPath(searchOrigin.getText(), searchDestination.getText(), false);
 				redraw();
 			}
 		});
-		
+
 		JButton findPathTime = new JButton("Find Path - Time");			//Find Path Button
-		findPath.addActionListener(new ActionListener() {
+		findPathTime.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
-				
+
 				findShortestPath(searchOrigin.getText(), searchDestination.getText(), true);
 				redraw();
 			}
 		});
-		
+
 		JButton findArtPts = new JButton("Find Articulation Points");			//Find Path Button
 		findArtPts.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
-				
+
 				if(toggleArtPts){
 					findArticulationPoints();
 					redraw();
@@ -383,14 +383,14 @@ public abstract class GUI {
 				}
 			});
 		}
-		
+
 		searchOrigin = new JTextField(SEARCH_COLS);				//Create Origin SearchBox
 		searchOrigin.setMaximumSize(new Dimension(0, 25));
 		searchOrigin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		
+
 		searchDestination = new JTextField(SEARCH_COLS);		//Create Destination SearchBox
 		searchDestination.setMaximumSize(new Dimension(0, 25));
 		searchDestination.addActionListener(new ActionListener() {
@@ -448,7 +448,7 @@ public abstract class GUI {
 		controls.add(new JLabel("Search"));
 		controls.add(Box.createRigidArea(new Dimension(5, 0)));
 		controls.add(search);
-		
+
 		controls.add(findArtPts);				//Add Find ArtPts button
 		controls.add(findPath);					//Add Find Path button
 		controls.add(findPathTime);				//Add Find Path - Time button
@@ -476,7 +476,7 @@ public abstract class GUI {
 
 		mouseHandle = new MouseAdapter() {					//Mouse Handle
 			public void mouseReleased(MouseEvent e) {
-				
+
 
 				if(mouseCounter == 0){
 					onClick(e, "Origin");
@@ -485,12 +485,12 @@ public abstract class GUI {
 				else if(mouseCounter == 1){
 					onClick(e, "Destination");
 					mouseCounter++;
-					
+
 					if(mouseCounter == 2){
 						redraw();
 						mouseCounter = 0;
 					}
-					
+
 				}
 			}
 		};

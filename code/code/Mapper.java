@@ -20,7 +20,7 @@ import java.util.TreeMap;
  * This is the main class for the mapping program. It extends the GUI abstract
  * class and implements all the methods necessary, as well as having a main
  * function.
- * 
+ *
  * @author tony
  */
 public class Mapper extends GUI {
@@ -52,7 +52,7 @@ public class Mapper extends GUI {
 	// our data structures.
 	private Graph graph;
 	private Trie trie;
-	
+
 	//Articulation Points
 	private List<Node> articulationPoints;
 
@@ -80,18 +80,18 @@ public class Mapper extends GUI {
 
 		// if it's close enough, highlight it and show some information.
 		if (clicked.distance(closest.location) < MAX_CLICKED_DISTANCE) {
-		
+
 			if(source == "Origin")
 				getSearchOrigin().setText(Integer.toString(closest.nodeID));
-			else if(source == "Destination")	
+			else if(source == "Destination")
 				getSearchDestination().setText(Integer.toString(closest.nodeID));
-			
+
 			graph.setHighlight(closest);
 			getTextOutputArea().setText(closest.toString());
 		}
-		
+
 	}
-	
+
 
 	@Override
 	protected void onSearch() {
@@ -171,24 +171,24 @@ public class Mapper extends GUI {
 		origin = new Location(-250, 250); // close enough
 		scale = 1;
 	}
-	
+
 	@Override
 	protected void findShortestPath(String origin, String destination, boolean distTime) {
-		
-		Node start = graph.nodes.get(Integer.parseInt(origin));			
-		Node end = graph.nodes.get(Integer.parseInt(destination));		
-		
-		AStarSearch aStar = new AStarSearch(graph, start, end);	
-		
+
+		Node start = graph.nodes.get(Integer.parseInt(origin));
+		Node end = graph.nodes.get(Integer.parseInt(destination));
+
+		AStarSearch aStar = new AStarSearch(graph, start, end);
+
 		if(!distTime){														//PATH BASED ON DISTANCE
 			//Exception: Check for Disconnected Route/Path
 			if(graph.checkRoute(start, end)){
-				
+
 				List<Segment> path = aStar.searchDist();				//Perform AStar Search - DIST
-						
+
 				getTextOutputArea().setText(getPathTextOutput(path, start, end));
 				graph.setHighlightPath(path, start, end);						//Highlight and Display Path
-				
+
 			}
 			else if(!graph.checkRoute(start, end)){
 				StringBuilder sb = new StringBuilder();
@@ -198,9 +198,14 @@ public class Mapper extends GUI {
 			}
 		}
 		else if(distTime){												//PATH BASED ON TIME
-			
+
 			if(graph.checkRoute(start, end)){
-				//List<Segment> path = aStar.searchPathTime();
+
+				List<Segment> distPath = aStar.searchDist();
+				List<Segment> timePath = aStar.searchPathTime();
+
+//				getTextOutputArea().setText(getPathTextOutput(timePath, start, end));
+				graph.setHighlightPath(timePath, start, end);						//Highlight and Display Path
 			}
 			else if(!graph.checkRoute(start, end)){
 				StringBuilder sb = new StringBuilder();
@@ -209,86 +214,86 @@ public class Mapper extends GUI {
 				getTextOutputArea().setText(sb.toString());
 			}
 		}
-		
+
 	}
-	
+
 	/**Finds all Articulation Points on the graph - Iteratively
-	 * 
+	 *
 	 * @return HashSet<Node> articulation points*/
 	public void findArticulationPoints(){
-		
+
 		IterArtPts artPts = new IterArtPts(graph);
 		articulationPoints = artPts.getArticulationPoints();			//Find Articulation Points
 
 		//===========================INTIALIZE=============================
-		
+
 		//Highlight Points on Graph
 		graph.setHighlightNodes(articulationPoints);
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("Articulation Points: \n");
 		for(Node art: articulationPoints)
 			sb.append("NodeID: "+art.nodeID+ "	Location: "+art.location.x+","+art.location.y+"\n");
 		getTextOutputArea().setText(sb.toString());
-		
+
 	}
-		
+
 	/**Eliminates Duplicate Road Names, Gets Max Distance for each Road*/
 	public String getPathTextOutput(List<Segment> path, Node start, Node end){
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
 		"Start At Intersection: "+start.nodeID+"	Total Distance To Goal: "+calcHeuristic(start, end)+" km \n");
-		
+
 		String name = null;
 		double dist = 0;
 		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
-		
+
 		name = path.get(path.size()-1).road.name;
-		
-		for(int i = path.size()-1; i >= 0; i--){	
-			
+
+		for(int i = path.size()-1; i >= 0; i--){
+
 			if(path.get(i).road.name == name){
-				
+
 				if(i == 0)
 					textPath.put(name, dist);
-				
+
 				if(path.get(i).getPathDistance() > dist)
 					dist = path.get(i).getPathDistance();
 			}
 			else if(path.get(i).road.name != name){
-				
+
 				textPath.put(name, dist);
-		
+
 				name = path.get(i).road.name;
 				dist = path.get(i).getPathDistance();
-				
+
 				if(i == 0)
 					textPath.put(name, dist);
-				
+
 			}
-			
+
 		}
-				
+
 		for(Map.Entry<String, Double> e : textPath.entrySet())
 			sb.append("Street: " + e.getKey() + "	Distance To Goal: " + e.getValue() +" km \n");
-		
-		sb.append("REACHED END GOAL!");					
-		
+
+		sb.append("REACHED END GOAL!");
+
 		return sb.toString();
 	}
 
 	/**Returns the Euclidean distance between the current node and the end destination
-	 * 
+	 *
 	 * @param Node current, Node destination*/
 	public double calcHeuristic(Node current, Node destination) {
-		
+
 		double distance = 0;
-		
+
 		//Calculate Euclidean Distance
-		distance = Math.sqrt(Math.pow(current.location.x - destination.location.x, 2) + 
+		distance = Math.sqrt(Math.pow(current.location.x - destination.location.x, 2) +
 				Math.pow(current.location.y - destination.location.y, 2));
-		
+
 		return distance;
 	}
 
@@ -316,7 +321,7 @@ public class Mapper extends GUI {
 	public void reset(){
 		graph.articulationPoints = null;
 	}
-	
+
 }
 
 // code for COMP261 assignments

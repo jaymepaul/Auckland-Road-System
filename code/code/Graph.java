@@ -20,7 +20,7 @@ import java.util.Set;
  * This represents the data structure storing all the roads, nodes, and
  * segments, as well as some information on which nodes and segments should be
  * highlighted.
- * 
+ *
  * @author tony
  */
 public class Graph {
@@ -32,22 +32,22 @@ public class Graph {
 	Collection<Segment> segments;
 	// restrictions
 	Collection<Restriction> restrictions;
-	
+
 	Collection<Road> highlightedRoads = new HashSet<>();
 	Collection<Segment> highlightedSegments = new ArrayList<>();
 	Collection<Node> articulationPoints = new LinkedList<>();
-	
+
 	List<List<Node>> subNodes = new ArrayList<List<Node>>();
-	
+
 	Node highlightedNode, startNode, endNode;			//A* Variables
-	
+
 	public Graph(File nodesFile, File roads, File segments, File polygons, File restrictions, File traffic) {
 		this.nodes = Parser.parseNodes(nodesFile, this);
 		this.roads = Parser.parseRoads(roads, this);
 		this.segments = Parser.parseSegments(segments, this);
 		this.restrictions = Parser.parseRestrictions(restrictions, this);
 		Parser.parseTrafficLights(traffic, nodes);
-		
+
 		findAllSubGraphs();			//Creates a List of List of Nodes that each represent a component of the graph
 	}
 
@@ -71,11 +71,11 @@ public class Graph {
 				seg.draw(g2, origin, scale);
 			}
 		}
-		
+
 		//Draw Highlighted Segments
-		for (Segment seg : highlightedSegments) 
+		for (Segment seg : highlightedSegments)
 			seg.draw(g2, origin, scale);
-		
+
 
 		// draw all the nodes.
 		g2.setColor(Mapper.NODE_COLOUR);
@@ -107,13 +107,13 @@ public class Graph {
 	public void setHighlight(Collection<Road> roads) {
 		this.highlightedRoads = roads;
 	}
-	
+
 	public Segment getSegmentFromPoints(Node from, Node to){
-		
+
 		Segment segment = null;
-	
+
 		for(Segment s : segments){
-			if(s.start.nodeID == from.nodeID && s.end.nodeID == to.nodeID 
+			if(s.start.nodeID == from.nodeID && s.end.nodeID == to.nodeID
 					|| s.start.nodeID == to.nodeID && s.end.nodeID == from.nodeID){
 				segment = s;
 			}
@@ -121,7 +121,7 @@ public class Graph {
 		return segment;
 	}
 
-	public void setHighlightPath(List<Segment> path, Node start, Node end) {		
+	public void setHighlightPath(List<Segment> path, Node start, Node end) {
 		this.startNode = start;
 		this.endNode = end;
 		this.highlightedSegments = path;
@@ -130,34 +130,34 @@ public class Graph {
 	public void setHighlightNodes(List<Node> articulationPoints) {
 		this.articulationPoints = articulationPoints;
 	}
-	
+
 	public void findAllSubGraphs(){
-		
+
 		//Breadth First Search
 		int counter = 0, MAX_NODES = nodes.size();
 		int INF = (int)Double.POSITIVE_INFINITY;
-		
+
 		for(Node n : nodes.values()){
 			n.setDist(INF);
 			n.setParent(null);
 		}
-		
+
 		while(counter != MAX_NODES){
-				
+
 			Node root = getNewNode();							//Get a disconnected Node, perform BFS
 			Queue<Node> queue = new LinkedList<Node>();
 			List<Node> subN = new ArrayList<Node>();
-				
+
 			root.setDist(0);
 			queue.add(root);
-				
+
 			Node cur = null;
 			while(!queue.isEmpty()){
-					
+
 				cur = queue.poll();
 				subN.add(cur);
 				counter++;
-					
+
 				for(Node nhb: cur.getNeighbours()){
 					if(nhb.getDist() == INF){
 						nhb.setDist(cur.getDist()+1);
@@ -166,64 +166,64 @@ public class Graph {
 					}
 				}
 			}
-			subNodes.add(subN);				//Add to Collection of SubNodes	
+			subNodes.add(subN);				//Add to Collection of SubNodes
 		}
 	}
 
 	/**Gets a Node that is disconnected from the graph
-	 * 
+	 *
 	 * @return Node - disconnected Node to be processed*/
 	public Node getNewNode() {
-		
+
 		Node node = null;
-		
-		Set<Node> tmpNodes = new HashSet<Node>(); 
+
+		Set<Node> tmpNodes = new HashSet<Node>();
 		for(Node n : nodes.values())
 			tmpNodes.add(n);						//Copy Set of Nodes
-		
+
 		if(subNodes.size() == 0)
 			node = nodes.get(14392);				//Arbitrary Start Node
 		else if(subNodes.size() > 0){
 			for(List<Node> col : subNodes)
 				tmpNodes.removeAll(col);			//Difference between subNodes set and full set of Nodes
 		}
-		
+
 		for(Node nb : tmpNodes){
 			node = nb;
 			break;
 		}
-		
+
 		return node;
 	}
 
 	/**Returns a list of all disconnected Nodes
-	 * 
+	 *
 	 * @return List<Node> - list of disconnected nodes*/
 	public List<Node> getDisconnectedNodes() {
-		
+
 		List<Node> discNodes = new ArrayList<Node>();
-		
+
 		for(List<Node> list : subNodes)
 			discNodes.add(list.get(0));
-		
+
 		return discNodes;
 	}
-	
+
 	/**Checks if start Node and end Node are within the same component of the Graph
-	 * 
+	 *
 	 * @return boolean - valid/invalid route*/
 	public boolean checkRoute(Node start, Node end){
-		
+
 		boolean valid = false;
-		
+
 		for(List<Node> list : subNodes){
 			if(list.contains(start) && list.contains(end))		//Check if both Nodes are in one component of the graph, I.e. NOT DISCONNECTED
 				valid = true;
 		}
-		
+
 		return valid;
 	}
-	
+
 }
 
 // code for COMP261 assignments

@@ -11,7 +11,7 @@ import java.util.Set;
  * Node represents an intersection in the road graph. It stores its ID and its
  * location, as well as all the segments that it connects to. It knows how to
  * draw itself, and has an informative toString method.
- * 
+ *
  * @author tony
  */
 public class Node implements Comparable<Node>{
@@ -22,38 +22,38 @@ public class Node implements Comparable<Node>{
 
 	private Collection<Segment> inNeighbours;
 	private Collection<Segment> outNeighbours;		//Edges Coming out of Node
-	
+
 	private Collection<Node> neighbours;			//Direct Neighbors of Node
-	
+
 	private boolean visited;						//A* Search Variables
-	private Node pathFrom; 
+	private Node pathFrom;
 	private double cost;
-	
-	private int depth;								
+
+	private int depth;
 	private int reachBack;							//Articulation Points Variables
-	
+
 	private int dist;
 	private Node parent;							//Breadth First Search Variables
-	
+
 	private List<Restriction> restrictions;			//Node Restriction
-	
-	public boolean hasLights; 						//Traffic Light 
-							
-	
+
+	public boolean hasLights; 						//Traffic Light
+
+
 	public Node(int nodeID, double lat, double lon) {
 		this.nodeID = nodeID;
 		this.location = Location.newFromLatLon(lat, lon);
 		this.segments = new HashSet<Segment>();
-		
+
 		this.visited = false;					//Initially set to false
 		this.pathFrom = null;					//Initially null
-		
+
 		this.inNeighbours = new ArrayList<Segment>();
 		this.outNeighbours = new ArrayList<Segment>();
-		
+
 		this.neighbours = new ArrayList<Node>();
 		this.restrictions = new ArrayList<Restriction>();
-		
+
 		this.setHasLights(false);
 	}
 
@@ -85,20 +85,20 @@ public class Node implements Comparable<Node>{
 		}
 		return str.substring(0, str.length() - 2);
 	}
-	
+
 	public Collection<Segment> getInNeighbours() {
 		return inNeighbours;
 	}
 
 	/**Returns a Collection of Edges coming out of this Node
-	 * 
+	 *
 	 * @return Collection<Segment> - edges out of this node*/
 	public Collection<Segment> getOutNeighbours() {
 		return outNeighbours;
 	}
-	
+
 	public Collection<Node> getNeighbours(){
-		
+
 		for(Segment s : outNeighbours){
 			if(s.start.nodeID == this.nodeID)
 				neighbours.add(s.end);
@@ -128,6 +128,12 @@ public class Node implements Comparable<Node>{
 		return cost;
 	}
 
+
+
+	public double getCost() {
+		return cost;
+	}
+
 	public void setCost(double cost) {
 		this.cost = cost;
 	}
@@ -147,7 +153,7 @@ public class Node implements Comparable<Node>{
 	public void setReachBack(int reachBack) {
 		this.reachBack = reachBack;
 	}
-	
+
 	public int getDist() {
 		return dist;
 	}
@@ -163,7 +169,7 @@ public class Node implements Comparable<Node>{
 	public void setParent(Node parent) {
 		this.parent = parent;
 	}
-	
+
 	public List<Restriction> getRestrictions() {
 		return restrictions;
 	}
@@ -183,7 +189,7 @@ public class Node implements Comparable<Node>{
 	@Override
 	public int compareTo(Node n) {
 		return n.getDepth() - this.depth;
-	}	
+	}
 }
 
 // code for COMP261 assignments
