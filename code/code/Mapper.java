@@ -184,6 +184,7 @@ public class Mapper extends GUI {
 			//Exception: Check for Disconnected Route/Path
 			if(graph.checkRoute(start, end)){
 
+				aStar.setOrigin(start); aStar.setDestination(end);
 				List<Segment> path = aStar.searchDist();				//Perform AStar Search - DIST
 
 				getTextOutputArea().setText(getPathTextOutput(path, start, end));
@@ -201,7 +202,7 @@ public class Mapper extends GUI {
 
 			if(graph.checkRoute(start, end)){
 
-				List<Segment> distPath = aStar.searchDist();
+				aStar.setOrigin(start); aStar.setDestination(end);
 				List<Segment> timePath = aStar.searchPathTime();
 
 //				getTextOutputArea().setText(getPathTextOutput(timePath, start, end));

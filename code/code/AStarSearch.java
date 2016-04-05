@@ -119,7 +119,7 @@ public class AStarSearch {
 		List<Segment> timePath = new ArrayList<Segment>();
 
 		//Admissable Heuristic - Time
-		double bestToGoal = INF;
+		double totalEstTime = calcTimeHeuristic(origin, destination);
 
 		PriorityQueue<FringeTimeNode> fringe = new PriorityQueue<FringeTimeNode>();
 		List<FringeTimeNode> fnList = new ArrayList<FringeTimeNode>();
@@ -139,6 +139,8 @@ public class AStarSearch {
 			FringeTimeNode fn = fringe.poll();
 			Node node = fn.getNode();
 
+			displayTimeInfo(fn, totalEstTime);
+
 			if(fn.getParent()!=null){
 
 				Segment seg = graph.getSegmentFromPoints(fn.getParent(), node);
@@ -148,42 +150,33 @@ public class AStarSearch {
 				fnList.add(fn);
 			}
 
-			if(fn.getTimeCostToHere() <= node.getCost()){
-
+			if(!node.isVisited()){
+				node.setVisited(true);
 				node.setPathFrom(fn.getParent());
 				node.setCost(fn.getTimeCostToHere());
+			}
+			if(node == destination)
+				break;
 
-				if(node == destination){
-					System.out.println("Reached End Goal!");
-					break;
-				}
+			Node to = null;
+			for(Segment s : node.getOutNeighbours()){
 
-				Node neigh = null;
-				for(Segment s : node.getOutNeighbours()){
+				if(node.nodeID == s.start.nodeID)
+					to = s.end;
+				else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
+					to = s.start;
 
-					double toNeigh = fn.getTimeCostToHere() + (s.length/s.road.speed);
-
-					if(node.nodeID == s.start.nodeID)
-						neigh = s.end;
-					else if(node.nodeID != s.start.nodeID)			//Exception: Ensure that 'to' Node is not the same as 'from' Node
-						neigh = s.start;
-
-					if(toNeigh <= neigh.getCost()){
-
-						double estTotal = toNeigh + calcTimeHeuristic(neigh, destination);
-						if(estTotal < bestToGoal){
-							fringe.offer(new FringeTimeNode(neigh, node, toNeigh, estTotal));
-							if(neigh == destination)
-								bestToGoal = toNeigh;
-						}
-					}
+				if(!to.isVisited()){
+					double costToNeigh = fn.getTimeCostToHere() + (s.length/s.road.speed);
+					double estTotal = costToNeigh + calcTimeHeuristic(to, destination);
+					fringe.offer(new FringeTimeNode(to, node, costToNeigh, estTotal));
 				}
 			}
 		}
 
-
 		return timePath;
 	}
+
 
 	/**Calculates total Time heuristic estimate based on
 	 * shortest path considers speed limits and road class*/
@@ -191,11 +184,8 @@ public class AStarSearch {
 
 		double time = 0;
 
-		origin = start; destination = end;
-		List<Segment> path = searchDist();
-
-		for(Segment s : path)
-			time += (s.length/s.road.speed);
+		double dist = calcDistHeuristic(start, end);
+		time = dist / 7;			//Divide by MAX SPEED
 
 		return time;
 	}
@@ -301,7 +291,19 @@ public class AStarSearch {
 			System.out.println("Street Name: " + getRoadNameFromPoints(from, to) +
 					"	Distance to Goal: " + fn.getDistToGoal() + "	FROM: " + fn.getParent().nodeID + "	TO: " + to.nodeID + "	TotalDist: " + totalDist);
 		}
+	}
 
+	private void displayTimeInfo(FringeTimeNode fn, double totalEstTime) {
+
+		Node from = fn.getParent();
+		Node to = fn.getNode();
+
+		if(fn.getParent() == null)
+			System.out.println(getRoadNameFromPoints(from, to) + "	TotalTime: " + totalEstTime);
+		else if(from!=null){
+			System.out.println("Street Name: " + getRoadNameFromPoints(from, to) +
+					"	Time to Goal: " + fn.getTotalTimeCostToGoal() + "	FROM: " + fn.getParent().nodeID + "	TO: " + to.nodeID + "	TotalTime: " + totalEstTime);
+		}
 
 	}
 
@@ -322,4 +324,22 @@ public class AStarSearch {
 
 		return name;
 	}
+
+	public Node getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(Node origin) {
+		this.origin = origin;
+	}
+
+	public Node getDestination() {
+		return destination;
+	}
+
+	public void setDestination(Node destination) {
+		this.destination = destination;
+	}
+
+
 }
