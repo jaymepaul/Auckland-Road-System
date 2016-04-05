@@ -72,9 +72,9 @@ public abstract class GUI {
 	
 	/**
 	 * Is called whenever the origin/destination search boxes are updates
-	 * Uses The A* Algorithm to find the shortest path.
+	 * Uses The A* Algorithm to find the shortest path - BASED ON DISTANCE.
 	 */
-	protected abstract void findShortestPath(String origin, String destination);
+	protected abstract void findShortestPath(String origin, String destination, boolean distTime);
 	
 	/**
 	 * Is called to find all the articulation points in the graph.
@@ -107,7 +107,7 @@ public abstract class GUI {
 	 * 			  a File for restrictions.tab
 	 */
 	protected abstract void onLoad(File nodes, File roads, File segments,
-			File polygons, File restrictions);
+			File polygons, File restrictions, File traffic);
 
 	// here are some useful methods you'll need.
 
@@ -176,6 +176,7 @@ public abstract class GUI {
 	private static final String SEGS_FILENAME = "roadSeg-roadID-length-nodeID-nodeID-coords.tab";
 	private static final String POLYS_FILENAME = "polygon-shapes.mp";
 	private static final String REST_FILENAME = "restrictions.tab";
+	private static final String TRAFFIC_FILENAME = "traffic-lights";
 
 	/*
 	 * In Swing, everything is a component; buttons, graphics panes, tool tips,
@@ -231,6 +232,7 @@ public abstract class GUI {
 		load.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				File nodes = null, roads = null, segments = null, polygons = null, rest = null;
+				File traffic = null;
 
 				// set up the file chooser
 				fileChooser.setCurrentDirectory(new File("."));
@@ -255,6 +257,8 @@ public abstract class GUI {
 							polygons = f;
 						} else if (f.getName().equals(REST_FILENAME)) {
 							rest = f;
+						} else if (f.getName().equals(TRAFFIC_FILENAME)) {
+							traffic = f;
 						}
 					}
 
@@ -265,7 +269,7 @@ public abstract class GUI {
 								"Directory does not contain correct files",
 								"Error", JOptionPane.ERROR_MESSAGE);
 					} else {
-						onLoad(nodes, roads, segments, polygons, rest);
+						onLoad(nodes, roads, segments, polygons, rest, traffic);
 						redraw();
 					}
 				}
@@ -320,11 +324,20 @@ public abstract class GUI {
 			}
 		});
 		
-		JButton findPath = new JButton("Find Path");			//Find Path Button
+		JButton findPath = new JButton("Find Path - Dist");			//Find Path Button
 		findPath.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				
-				findShortestPath(searchOrigin.getText(), searchDestination.getText());
+				findShortestPath(searchOrigin.getText(), searchDestination.getText(), false);
+				redraw();
+			}
+		});
+		
+		JButton findPathTime = new JButton("Find Path - Time");			//Find Path Button
+		findPath.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				
+				findShortestPath(searchOrigin.getText(), searchDestination.getText(), true);
 				redraw();
 			}
 		});
@@ -438,6 +451,7 @@ public abstract class GUI {
 		
 		controls.add(findArtPts);				//Add Find ArtPts button
 		controls.add(findPath);					//Add Find Path button
+		controls.add(findPathTime);				//Add Find Path - Time button
 		controls.add(new JLabel("Origin: "));
 		controls.add(searchOrigin);				//Add Search TextBoxes to GUI
 		controls.add(new JLabel("Destination: "));

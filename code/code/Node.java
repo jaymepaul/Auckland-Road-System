@@ -36,6 +36,8 @@ public class Node implements Comparable<Node>{
 	private Node parent;							//Breadth First Search Variables
 	
 	private List<Restriction> restrictions;			//Node Restriction
+	
+	public boolean hasLights; 						//Traffic Light 
 							
 	
 	public Node(int nodeID, double lat, double lon) {
@@ -51,6 +53,8 @@ public class Node implements Comparable<Node>{
 		
 		this.neighbours = new ArrayList<Node>();
 		this.restrictions = new ArrayList<Restriction>();
+		
+		this.setHasLights(false);
 	}
 
 	public void addSegment(Segment seg) {
@@ -166,6 +170,14 @@ public class Node implements Comparable<Node>{
 
 	public void setRestrictions(List<Restriction> restrictions) {
 		this.restrictions = restrictions;
+	}
+
+	public boolean isHasLights() {
+		return hasLights;
+	}
+
+	public void setHasLights(boolean hasLights) {
+		this.hasLights = hasLights;
 	}
 
 	@Override

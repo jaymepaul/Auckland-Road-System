@@ -21,7 +21,7 @@ public class AStarSearch {
 	 *  distance estimate from node to goal. 
 	 * 
 	 * @return List<Segment> path - shortest path of segments and distances*/
-	public List<Segment> search(){
+	public List<Segment> searchDist(){
 		
 		//LinkedHashMap<Segment, Double> path = new LinkedHashMap<Segment, Double>();
 		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
@@ -72,9 +72,9 @@ public class AStarSearch {
 				//Exception: Check if valid one-way
 				if(s.road.oneWay == 1){		//1 = Oneway, 0 not
 					System.out.println("ONE WAY FOUND! @ "+s.road.roadID+ "	N1: "+s.start.nodeID+ "	N2: "+s.end.nodeID);
-					if(s.start.nodeID == node.nodeID)				//TEST: PUTIKI ST
+					if(s.start.nodeID == node.nodeID)				//Ensure that to = end of segment
 						to = s.end;
-					else
+					else											//If segment doesnt conform to one-way rule, then discard
 						continue;
 				}
 				else if(s.road.oneWay == 0){
@@ -92,6 +92,11 @@ public class AStarSearch {
 					double costToNeigh = fn.getCostToHere() + s.length;					//Calculate Cost to here + edge weight from here to neighbor
 					double estTotal = costToNeigh + calcHeuristic(to, destination);		//Calculate total estimate with heuristic
 				
+					if(to.hasLights){
+						System.out.println("Traffic Light @ "+to.nodeID);
+						estTotal += 1;		//Add Extra Cost if To Node has lights - Reduce its priority
+					}
+					
 					FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
 					f.setDistToGoal(calcHeuristic(to, destination));
 					fringe.offer(f);
@@ -100,6 +105,10 @@ public class AStarSearch {
 		}
 		
 		return trimPath(path, fnList);				//Ensures that only the shortest and reachable path is considered;
+	}
+	
+	public void searchPathTime(){
+		
 	}
 	
 	/**Returns the Euclidean distance between the current node and the end destination
@@ -197,7 +206,7 @@ public class AStarSearch {
 		
 		if(from == null){
 			System.out.println(getRoadNameFromPoints(from, to) +"	Distance to Goal: " 
-						+ fn.getDistToGoal() + "	TotalDist: " + totalDist);
+						+ totalDist + "	TotalDist: " + totalDist);
 		}
 		else if(from!=null){
 			System.out.println("Street Name: " + getRoadNameFromPoints(from, to) +

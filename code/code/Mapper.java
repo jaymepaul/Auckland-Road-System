@@ -165,38 +165,50 @@ public class Mapper extends GUI {
 	}
 
 	@Override
-	protected void onLoad(File nodes, File roads, File segments, File polygons, File restrictions) {
-		graph = new Graph(nodes, roads, segments, polygons, restrictions);
+	protected void onLoad(File nodes, File roads, File segments, File polygons, File restrictions, File traffic) {
+		graph = new Graph(nodes, roads, segments, polygons, restrictions, traffic);
 		trie = new Trie(graph.roads.values());
 		origin = new Location(-250, 250); // close enough
 		scale = 1;
 	}
 	
 	@Override
-	protected void findShortestPath(String origin, String destination) {
+	protected void findShortestPath(String origin, String destination, boolean distTime) {
 		
 		Node start = graph.nodes.get(Integer.parseInt(origin));			
 		Node end = graph.nodes.get(Integer.parseInt(destination));		
 		
-		//Exception: Check for Disconnected Route/Path
-		if(graph.checkRoute(start, end)){
-			
-			AStarSearch aStar = new AStarSearch(graph, start, end);			
-			List<Segment> path = aStar.search();							//Perform AStar Search
-					
-			getTextOutputArea().setText(getPathTextOutput(path, start, end));
-			graph.setHighlightPath(path, start, end);						//Highlight and Display Path
-			
+		AStarSearch aStar = new AStarSearch(graph, start, end);	
+		
+		if(!distTime){														//PATH BASED ON DISTANCE
+			//Exception: Check for Disconnected Route/Path
+			if(graph.checkRoute(start, end)){
+				
+				List<Segment> path = aStar.searchDist();				//Perform AStar Search - DIST
+						
+				getTextOutputArea().setText(getPathTextOutput(path, start, end));
+				graph.setHighlightPath(path, start, end);						//Highlight and Display Path
+				
+			}
+			else if(!graph.checkRoute(start, end)){
+				StringBuilder sb = new StringBuilder();
+				sb.append("Invalid Route! " + "	Start: "+start.nodeID + "	End: "+end.nodeID+"\n");
+				sb.append("Disconnected Path! \n");
+				getTextOutputArea().setText(sb.toString());
+			}
 		}
-		else if(!graph.checkRoute(start, end)){
+		else if(distTime){												//PATH BASED ON TIME
 			
-			StringBuilder sb = new StringBuilder();
-			sb.append("Invalid Route! " + "	Start: "+start.nodeID + "	End: "+end.nodeID+"\n");
-			sb.append("Disconnected Path! \n");
-			getTextOutputArea().setText(sb.toString());
-			
+			if(graph.checkRoute(start, end)){
+				//List<Segment> path = aStar.searchPathTime();
+			}
+			else if(!graph.checkRoute(start, end)){
+				StringBuilder sb = new StringBuilder();
+				sb.append("Invalid Route! " + "	Start: "+start.nodeID + "	End: "+end.nodeID+"\n");
+				sb.append("Disconnected Path! \n");
+				getTextOutputArea().setText(sb.toString());
+			}
 		}
-
 		
 	}
 	

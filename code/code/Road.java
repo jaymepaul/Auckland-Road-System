@@ -12,6 +12,8 @@ public class Road {
 	public final int roadID;
 	public final String name, city;
 	public final int oneWay;
+	public final int speed;
+	public final int roadClass;
 	public final Collection<Segment> components;
 
 	public Road(int roadID, int type, String label, String city, int oneway,
@@ -22,6 +24,8 @@ public class Road {
 		this.name = label;
 		this.components = new HashSet<Segment>();
 		this.oneWay = oneway;
+		this.speed = speed;
+		this.roadClass = roadclass;
 	}
 
 	public void addSegment(Segment seg) {

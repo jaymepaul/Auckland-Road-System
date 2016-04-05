@@ -156,6 +156,41 @@ public class Parser {
 		
 		return rest;
 	}
+	
+	public static void parseTrafficLights(File lights, Map<Integer, Node> nodes){
+		
+		if(lights!=null){
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(lights));
+				String line;
+
+				while ((line = br.readLine()) != null) {
+					String[] tokens = line.split("[\t]+");
+
+					double lat = asDouble(tokens[0]);
+					double lon = asDouble(tokens[1]);
+					
+					Location loc = Location.newFromLatLon(lon, lat);
+					Node node = null;
+					double locDiff = 1000;
+					//Lets find closest match of location to Node
+					for(Node n : nodes.values()){
+						if(n.location.distance(loc) <= locDiff){
+							locDiff = n.location.distance(loc);
+							node = n;
+						}
+					}
+					
+					if(node!=null)
+						node.setHasLights(true);  	//Set Node to have lights
+				}
+
+				br.close();
+			} catch (IOException e) {
+				throw new RuntimeException("file reading failed.");
+			}
+		}
+	} 
 
 	private static int asInt(String str) {
 		return Integer.parseInt(str);

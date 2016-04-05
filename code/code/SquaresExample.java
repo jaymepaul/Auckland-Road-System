@@ -73,7 +73,7 @@ public class SquaresExample extends GUI {
 	}
 
 	@Override
-	protected void onLoad(File nodes, File roads, File segments, File polygons, File rest) {
+	protected void onLoad(File nodes, File roads, File segments, File polygons, File rest, File traffic) {
 		getTextOutputArea().setText("example doesn't load any files.");
 	}
 
@@ -107,7 +107,7 @@ public class SquaresExample extends GUI {
 	}
 
 	@Override
-	protected void findShortestPath(String origin, String destination) {
+	protected void findShortestPath(String origin, String destination, boolean distTime) {
 		// TODO Auto-generated method stub
 		
 	}

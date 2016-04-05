@@ -8,8 +8,6 @@ public class IterArtPts {
 
 	private Stack<StackElement> activationStack;
 	private List<Node> articulationPoints;
-	private Node firstNode;
-	private Node root;
 	private Graph graph;
 	
 	private final int INF = (int)Double.POSITIVE_INFINITY;

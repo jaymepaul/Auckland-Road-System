@@ -41,11 +41,12 @@ public class Graph {
 	
 	Node highlightedNode, startNode, endNode;			//A* Variables
 	
-	public Graph(File nodes, File roads, File segments, File polygons, File restrictions) {
-		this.nodes = Parser.parseNodes(nodes, this);
+	public Graph(File nodesFile, File roads, File segments, File polygons, File restrictions, File traffic) {
+		this.nodes = Parser.parseNodes(nodesFile, this);
 		this.roads = Parser.parseRoads(roads, this);
 		this.segments = Parser.parseSegments(segments, this);
 		this.restrictions = Parser.parseRestrictions(restrictions, this);
+		Parser.parseTrafficLights(traffic, nodes);
 		
 		findAllSubGraphs();			//Creates a List of List of Nodes that each represent a component of the graph
 	}

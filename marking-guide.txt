@@ -34,6 +34,6 @@ Heuristic must be admissible.
 * [5] Takes into account intersection constraints such as traffic lights to prefer routes with fewer
 lights.
 
-Final mark calculation:
+Final mark calculation: t
 
 [q]Minimum: 40[/q] + [q]Core: 35[/q] + [q]Completion: 10[/q] + [q]Challenge: 20[/q]

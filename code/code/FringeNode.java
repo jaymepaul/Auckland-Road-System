@@ -24,8 +24,6 @@ public class FringeNode implements Comparable<FringeNode> {
 		return node;
 	}
 
-
-
 	public void setNode(Node node) {
 		this.node = node;
 	}
