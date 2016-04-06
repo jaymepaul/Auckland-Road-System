@@ -134,6 +134,7 @@ public class Graph {
 		this.articulationPoints = articulationPoints;
 	}
 
+	/**Breadth First Search algo to find all disconnected Nodes on the graph*/
 	public void findAllSubGraphs(){
 
 		//Breadth First Search

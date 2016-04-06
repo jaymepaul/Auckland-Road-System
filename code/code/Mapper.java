@@ -84,17 +84,15 @@ public class Mapper extends GUI {
 			if(source == "Origin"){
 				getSearchOrigin().setText(Integer.toString(closest.nodeID));
 				graph.setHighlight(closest, "origin");
-				redraw();
+				redraw();													//Highlight Origin
 			}
 			else if(source == "Destination"){
 				getSearchDestination().setText(Integer.toString(closest.nodeID));
-				graph.setHighlight(closest, "destination");
+				graph.setHighlight(closest, "destination");					//Highlight Destination
 				redraw();
 			}
-		
 			getTextOutputArea().setText(closest.toString());
 		}
-
 	}
 
 
@@ -177,6 +175,14 @@ public class Mapper extends GUI {
 		scale = 1;
 	}
 
+	/**Uses the A* search algorithm to find the Shortest Path 
+	 * from the given origin and destination Node.
+	 * Highlights the path on the map and prints out the
+	 * roads along the path and its respective distances
+	 * or time.
+	 * 
+	 *  @param boolean distTime - toggle to choose between distance/time heuristic
+	 * */
 	@Override
 	protected void findShortestPath(String origin, String destination, boolean distTime) {
 
@@ -224,8 +230,9 @@ public class Mapper extends GUI {
 	}
 
 	/**Finds all Articulation Points on the graph - Iteratively
-	 *
-	 * @return HashSet<Node> articulation points*/
+	 * Considers sub components of the graph
+	 * 
+	 **/
 	public void findArticulationPoints(){
 
 		IterArtPts artPts = new IterArtPts(graph);
@@ -244,7 +251,10 @@ public class Mapper extends GUI {
 
 	}
 
-	/**Eliminates Duplicate Road Names, Gets Max Distance for each Road*/
+	/**Returns the text output of the path
+	 * Eliminates Duplicate Road Names, Gets Max Distance for each Road
+	 * 
+	 * @return String - text output of path*/
 	public String getPathTextOutput(List<Segment> path, Node start, Node end){
 
 		StringBuilder sb = new StringBuilder();
@@ -290,6 +300,10 @@ public class Mapper extends GUI {
 		return sb.toString();
 	}
 
+	/**Returns the text output of the path
+	 * Omits duplicate road names and includes the max time for each road
+	 * 
+	 * @return String - text output of path*/
 	public String getTimePathTextOutput(List<Segment> path, Node start, Node end){
 
 		StringBuilder sb = new StringBuilder();

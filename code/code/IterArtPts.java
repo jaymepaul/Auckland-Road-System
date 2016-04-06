@@ -14,10 +14,15 @@ public class IterArtPts {
 	
 	public IterArtPts(Graph graph){
 		this.graph = graph;
-		
 		initArtPts();
 	}
 	
+	/**Initializes the collections to be used for storing
+	 * Articulation Points and StackElements. 
+	 * Iterates through each Disconnected Node on the graph
+	 * and runs the Articulation Points algorithm on each one
+	 * 
+	 * */
 	public void initArtPts(){
 		
 		articulationPoints = new ArrayList<Node>();
@@ -47,6 +52,14 @@ public class IterArtPts {
 		
 	}
 	
+	/**Core Articulation Points algorithm, takes a neighbor Node
+	 * and a Parent node then initiates the algorithm iteratively.
+	 * 
+	 * Essentially consists of THREE CASES: 
+	 * - No children, set children
+	 * - Has children, process children
+	 * - Find Articulation Point
+	 * */
 	public void findArtPts(Node firstNode, Node root){
 		
 		// Push First Node

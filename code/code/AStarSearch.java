@@ -21,7 +21,7 @@ public class AStarSearch {
 	 *  heuristic estimate. I.e. Not only shortest edge weight but also lowest
 	 *  distance estimate from node to goal.
 	 *
-	 * @return List<Segment> path - shortest path of segments and distances*/
+	 * @return List<Segment> path - shortest path from start to end*/
 	public List<Segment> searchDist(){
 
 
@@ -108,6 +108,7 @@ public class AStarSearch {
 	 * finding shortest distance. Ensures that the algo
 	 * is admissible (underestimates the totalCost)
 	 *
+	 *@return List<Segment> - fastest path from start to end
 	 * */
 	public List<Segment> searchPathTime(){
 
@@ -277,7 +278,9 @@ public class AStarSearch {
 	}
 
 
-	/**Ensures that the path returned is the shortest and reachable*/
+	/**Ensures that the path to be highlighted excludes any incorrect routes/paths
+	 * 
+	 * @return List<Segment> - path to be highlighted*/
 	public List<Segment> trimPath(List<Segment> path, List<FringeNode> fnList){
 
 
@@ -306,6 +309,9 @@ public class AStarSearch {
 		return realPath;
 	}
 
+	/**Ensures that the path to be highlighted excludes any incorrect routes/paths
+	 * 
+	 *  @return List<Segment> - path to be highlighted*/
 	public List<Segment> trimTimePath(List<Segment> path, List<FringeTimeNode> fnList){
 
 
@@ -365,6 +371,9 @@ public class AStarSearch {
 
 	}
 
+	/**Gets the right road name based on the points given
+	 * 
+	 * @return String roadName*/
 	private String getRoadNameFromPoints(Node from, Node neighbor) {
 
 		String name = null;
@@ -382,7 +391,10 @@ public class AStarSearch {
 
 		return name;
 	}
-
+	
+	/**Parses the road speed depending on the number given as input
+	 * 
+	 * @return int speed - the speed in km/h */
 	public int getRoadSpeed(int speed){
 		
 		int spd = 0;
