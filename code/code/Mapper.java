@@ -202,7 +202,7 @@ public class Mapper extends GUI {
 
 			if(graph.checkRoute(start, end)){
 
-				aStar.setOrigin(start); aStar.setDestination(end);
+				aStar.setOrigin(start); aStar.setDestination(end);		//TEST: 2707 - 3068, DIST V TIME, 2707-30126
 				List<Segment> timePath = aStar.searchPathTime();
 
 				getTextOutputArea().setText(getTimePathTextOutput(timePath, start, end));
@@ -278,7 +278,8 @@ public class Mapper extends GUI {
 
 		for(Map.Entry<String, Double> e : textPath.entrySet())
 			sb.append("Street: " + e.getKey() + "	Distance To Goal: " + e.getValue() +" km \n");
-
+		
+		sb.append("Total Time Taken : "+AStarSearch.calcTotalTime(path)+"s \n");
 		sb.append("REACHED END GOAL!");
 
 		return sb.toString();

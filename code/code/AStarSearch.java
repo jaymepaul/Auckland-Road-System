@@ -93,11 +93,6 @@ public class AStarSearch {
 					double costToNeigh = fn.getCostToHere() + s.length;					//Calculate Cost to here + edge weight from here to neighbor
 					double estTotal = costToNeigh + calcDistHeuristic(to, destination);		//Calculate total estimate with heuristic
 
-					if(to.hasLights){
-						System.out.println("Traffic Light @ "+to.nodeID);
-						estTotal += 1;		//Add Extra Cost if To Node has lights - Reduce its priority, more expensive
-					}
-
 					FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
 					f.setDistToGoal(calcDistHeuristic(to, destination));		//NOTE: CHECK REDUNDANCY
 					fringe.offer(f);
@@ -183,8 +178,15 @@ public class AStarSearch {
 
 
 				if(!to.isVisited()){
-					double costToNeigh = fn.getTimeCostToHere() + (s.length/s.road.speed);
+					
+					double costToNeigh = fn.getTimeCostToHere() + ( (s.length/getRoadSpeed(s.road.speed)) * 3600) ;
 					double estTotal = costToNeigh + calcTimeHeuristic(to, destination);
+					
+					if(to.hasLights){		// || node.hasLights
+						System.out.println("Traffic Light @ "+to.nodeID);
+						estTotal += 5;		//Add Extra Cost if To Node has lights - Reduce its priority, more expensive
+					}
+
 					fringe.offer(new FringeTimeNode(to, node, costToNeigh, estTotal));
 				}
 			}
@@ -195,13 +197,15 @@ public class AStarSearch {
 
 
 	/**Calculates total Time heuristic estimate based on
-	 * shortest path considers speed limits and road class*/
+	 * shortest path considers speed limits and road class
+	 * 
+	 * @retrun Time in seconds*/
 	public static double calcTimeHeuristic(Node start, Node end){
 
 		double time = 0;
 
 		double dist = calcDistHeuristic(start, end);
-		time = dist / 7;			//Divide by MAX SPEED
+		time = (dist / 150) * 3600;			//Divide by MAX SPEED
 
 		return time;
 	}
@@ -218,6 +222,16 @@ public class AStarSearch {
 				Math.pow(current.location.y - destination.location.y, 2));
 
 		return distance;
+	}
+	
+	public static double calcTotalTime(List<Segment> path){
+		
+		double time = 0;
+		
+		for(Segment s : path)
+			time += ((s.length/s.road.speed) * 3600);
+		
+		return time;
 	}
 
 	/**Returns TRUE if the segment in question has restrictions applicable to it*/
@@ -369,6 +383,40 @@ public class AStarSearch {
 		return name;
 	}
 
+	public int getRoadSpeed(int speed){
+		
+		int spd = 0;
+	
+		switch(speed){
+		case 0:
+			spd = 5;
+			break;
+		case 1:
+			spd = 20;
+			break;
+		case 2:
+			spd = 40;
+			break;
+		case 3:
+			spd = 60;
+			break;
+		case 4:
+			spd = 80;
+			break;
+		case 5:
+			spd = 100;
+			break;
+		case 6:
+			spd = 110;
+			break;
+		case 7:
+			spd = 150;		//No Limit
+			break;
+		}
+		
+		return spd;
+	}
+	
 	public Node getOrigin() {
 		return origin;
 	}
