@@ -25,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.text.DefaultCaret;
 
@@ -201,7 +202,6 @@ public abstract class GUI {
 	private JFileChooser fileChooser;
 
 	private boolean toggleArtPts = true;
-	private int mouseCounter = 0;
 	private MouseAdapter mouseHandle;
 
 	public GUI() {
@@ -476,22 +476,14 @@ public abstract class GUI {
 
 		mouseHandle = new MouseAdapter() {					//Mouse Handle
 			public void mouseReleased(MouseEvent e) {
-
-
-				if(mouseCounter == 0){
+				
+				if(SwingUtilities.isLeftMouseButton(e)){
 					onClick(e, "Origin");
-					mouseCounter++;
 				}
-				else if(mouseCounter == 1){
+				else if(SwingUtilities.isRightMouseButton(e)){
 					onClick(e, "Destination");
-					mouseCounter++;
-
-					if(mouseCounter == 2){
-						redraw();
-						mouseCounter = 0;
-					}
-
 				}
+	
 			}
 		};
 		drawing.addMouseListener(mouseHandle);						//TEST

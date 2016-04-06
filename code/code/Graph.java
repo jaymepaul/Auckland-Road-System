@@ -40,6 +40,7 @@ public class Graph {
 	List<List<Node>> subNodes = new ArrayList<List<Node>>();
 
 	Node highlightedNode, startNode, endNode;			//A* Variables
+	String point = null;
 
 	public Graph(File nodesFile, File roads, File segments, File polygons, File restrictions, File traffic) {
 		this.nodes = Parser.parseNodes(nodesFile, this);
@@ -82,14 +83,11 @@ public class Graph {
 		for (Node n : nodes.values())
 			n.draw(g2, screen, origin, scale);
 
-		// draw the highlighted node, if it exists.
-		if (highlightedNode != null) {
-			g2.setColor(Mapper.HIGHLIGHT_COLOUR);
-			highlightedNode.draw(g2, screen, origin, scale);
-		}
-		if(startNode!=null || endNode!=null){
+		if(startNode!=null){
 			g2.setColor(Color.GREEN);								//Highlight Start and End Nodes
 			startNode.draw(g2, screen, origin, scale);
+		}
+		if(endNode!=null){
 			g2.setColor(Color.RED);
 			endNode.draw(g2, screen, origin, scale);
 		}
@@ -100,8 +98,13 @@ public class Graph {
 		}
 	}
 
-	public void setHighlight(Node node) {
+	public void setHighlight(Node node, String point) {
 		this.highlightedNode = node;
+		
+		if(point == "origin")
+			startNode = node;
+		else if(point == "destination")
+			endNode = node;
 	}
 
 	public void setHighlight(Collection<Road> roads) {

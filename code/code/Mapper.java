@@ -81,12 +81,17 @@ public class Mapper extends GUI {
 		// if it's close enough, highlight it and show some information.
 		if (clicked.distance(closest.location) < MAX_CLICKED_DISTANCE) {
 
-			if(source == "Origin")
+			if(source == "Origin"){
 				getSearchOrigin().setText(Integer.toString(closest.nodeID));
-			else if(source == "Destination")
+				graph.setHighlight(closest, "origin");
+				redraw();
+			}
+			else if(source == "Destination"){
 				getSearchDestination().setText(Integer.toString(closest.nodeID));
-
-			graph.setHighlight(closest);
+				graph.setHighlight(closest, "destination");
+				redraw();
+			}
+		
 			getTextOutputArea().setText(closest.toString());
 		}
 
