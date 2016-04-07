@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 
@@ -18,6 +19,7 @@ public class Segment {
 
 	private double pathDistance;
 	private double pathTime;
+	private Color color;
 
 	public Segment(Graph graph, int roadID, double length, int node1ID,
 			int node2ID, double[] coords) {
@@ -36,6 +38,7 @@ public class Segment {
 		this.road.addSegment(this);
 		this.start.addSegment(this);
 		this.end.addSegment(this);
+		this.color = Mapper.SEGMENT_COLOUR;
 	}
 
 	public void draw(Graphics g, Location origin, double scale) {
@@ -69,6 +72,16 @@ public class Segment {
 	public void setPathTime(double pathTime) {
 		this.pathTime = pathTime;
 	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
+	}
+
+
 
 }
 

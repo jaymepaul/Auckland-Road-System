@@ -42,7 +42,7 @@ public class Mapper extends GUI {
 	public static final double NODE_GRADIENT = 0.8;
 
 	// defines how much you move per button press, and is dependent on scale.
-	public static final double MOVE_AMOUNT = 100;
+	public static final double MOVE_AMOUNT = 30;
 	// defines how much you zoom in/out per button press, and the maximum and
 	// minimum zoom levels.
 	public static final double ZOOM_FACTOR = 1.3;
@@ -105,47 +105,19 @@ public class Mapper extends GUI {
 
 	@Override
 	protected void onSearch() {
+
 		if (trie == null)
 			return;
 
-		// get the search query and run it through the trie.
-		String query = getSearchBox().getText();
-		Collection<Road> selected = trie.get(query);
+		String prefix = getSearchBox().getText();								//Get User Input
 
-		// figure out if any of our selected roads exactly matches the search
-		// query. if so, as per the specification, we should only highlight
-		// exact matches. there may be (and are) many exact matches, however, so
-		// we have to do this carefully.
-		boolean exactMatch = false;
-		for (Road road : selected)
-			if (road.name.equals(query))
-				exactMatch = true;
+		if(trie.startsWith(prefix))												//Search Trie using prefix
+			graph.highlightRoads(trie.getRoads(prefix));						//If matches are found then get the entire Road and highlight it
 
-		// make a set of all the roads that match exactly, and make this our new
-		// selected set.
-		if (exactMatch) {
-			Collection<Road> exactMatches = new HashSet<>();
-			for (Road road : selected)
-				if (road.name.equals(query))
-					exactMatches.add(road);
-			selected = exactMatches;
-		}
+		String roadNames = trie.getRoadNames(prefix);							//Get all RoadNames
+		getTextOutputArea().setText(roadNames);									//Display RoadName on TextBox
 
-		// set the highlighted roads.
-		graph.setHighlight(selected);
 
-		// now build the string for display. we filter out duplicates by putting
-		// it through a set first, and then combine it.
-		Collection<String> names = new HashSet<>();
-		for (Road road : selected)
-			names.add(road.name);
-		String str = "";
-		for (String name : names)
-			str += name + "; ";
-
-		if (str.length() != 0)
-			str = str.substring(0, str.length() - 2);
-		getTextOutputArea().setText(str);
 	}
 
 	@Override
@@ -182,7 +154,7 @@ public class Mapper extends GUI {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		trie = new Trie(graph.roads.values());
+		trie = new Trie(graph.roads);
 		origin = new Location(-250, 250); // close enough
 		scale = 1;
 	}
@@ -192,18 +164,44 @@ public class Mapper extends GUI {
 
 		int zoomFactor = e.getWheelRotation();			//Neg - AWAY, Pos - TOWARDS
 
-		if(zoomFactor > 0){
-			if(scale > MIN_ZOOM){
-				scaleOrigin(true);
-				scale /= ZOOM_FACTOR;
-			}
-
-		}else if(zoomFactor < 0){
+		if(zoomFactor < 0){
 			if(scale < MAX_ZOOM){
-				scaleOrigin(false);
-				scale *= ZOOM_FACTOR;								//Zooming
+				scaleOrigin(true);
+				scale *= ZOOM_FACTOR;
 			}
 		}
+		else if(zoomFactor > 0){
+			if(scale > MIN_ZOOM){
+				scaleOrigin(false);
+				scale /= ZOOM_FACTOR;
+			}
+		}
+
+	}
+
+	@Override
+	protected void onPan(MouseEvent e, int xStart, int yStart){
+
+
+		int offSetY = e.getY();
+		int offSetX = e.getX();
+
+		if(Math.abs((double)offSetY - (double)yStart) > Math.abs((double)offSetX - (double)xStart)){		//Vertical Shift
+			if(offSetY > yStart){
+				origin = origin.moveBy(0, MOVE_AMOUNT / scale);
+			}else if (offSetY < yStart){
+		 		origin = origin.moveBy(0, -MOVE_AMOUNT / scale);
+		 	}
+		}
+		else if(Math.abs((double)offSetX - (double)xStart) > Math.abs((double)offSetY - (double)yStart)){		//Horizontal Shift
+			if (offSetX < xStart){
+				origin = origin.moveBy(MOVE_AMOUNT / scale, 0);
+			}
+			else if (offSetX > xStart){
+				origin = origin.moveBy(-MOVE_AMOUNT / scale, 0);
+			}
+		}
+
 	}
 
 	/**Uses the A* search algorithm to find the Shortest Path
@@ -415,6 +413,8 @@ public class Mapper extends GUI {
 		return String.format("%02d:%02d:%02d", hr, min, sec);
 
 	}
+
+
 
 }
 

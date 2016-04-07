@@ -66,16 +66,8 @@ public class Graph {
 
 		// draw all the segments.
 		g2.setColor(Mapper.SEGMENT_COLOUR);
-		for (Segment s : segments)
+		for (Segment s : segments){
 			s.draw(g2, origin, scale);
-
-		// draw the segments of all highlighted roads.
-		g2.setColor(Mapper.HIGHLIGHT_COLOUR);
-		g2.setStroke(new BasicStroke(3));
-		for (Road road : highlightedRoads) {
-			for (Segment seg : road.components) {
-				seg.draw(g2, origin, scale);
-			}
 		}
 
 		//Draw Polygons
@@ -237,6 +229,22 @@ public class Graph {
 		}
 
 		return valid;
+	}
+
+	/**Highlights Road based on Sequence of Segments within that Road*/
+	public void highlightRoads(List<Road> selectRoads){
+
+		highlightedSegments = new ArrayList<Segment>();
+
+		for(Road r : selectRoads){
+
+			for(Road rd : r.getAllRoads(roads)){			//For each Road, get All Roads assoc. to it
+
+				for(Segment s : rd.components){
+					highlightedSegments.add(s);
+				}
+			}
+		}
 	}
 
 }

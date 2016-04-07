@@ -71,6 +71,15 @@ public abstract class GUI {
 	 */
 	protected abstract void onSearch();
 
+
+	/**
+	 * Is called when the mouse is scrolled or clicked,
+	 * which is done with the passed MouseWheelEvent object.
+	 */
+	protected abstract void onScroll(MouseWheelEvent e);
+
+	protected abstract void onPan(MouseEvent e, int xStart, int yStart);
+
 	/**
 	 * Is called whenever the origin/destination search boxes are updates
 	 * Uses The A* Algorithm to find the shortest path - BASED ON DISTANCE.
@@ -120,12 +129,6 @@ public abstract class GUI {
 	}
 
 	/**
-	 * Is called when the mouse is scrolled or clicked,
-	 * which is done with the passed MouseWheelEvent object.
-	 */
-	protected abstract void onScroll(MouseWheelEvent e);
-
-	/**
 	 * @return the JTextField used as a search box in the top-right, which can
 	 *         be queried for the string it contains.
 	 */
@@ -171,7 +174,7 @@ public abstract class GUI {
 	// assignment up to and including completion.
 	// --------------------------------------------------------------------
 
-	private static final boolean UPDATE_ON_EVERY_CHARACTER = false;
+	private static final boolean UPDATE_ON_EVERY_CHARACTER = true;
 
 	private static final int DEFAULT_DRAWING_HEIGHT = 400;
 	private static final int DEFAULT_DRAWING_WIDTH = 400;
@@ -209,6 +212,9 @@ public abstract class GUI {
 
 	private boolean toggleArtPts = true;
 	private MouseAdapter mouseHandle;
+
+	private int xStart;
+	private int yStart;
 
 	public GUI() {
 		initialise();
@@ -480,9 +486,15 @@ public abstract class GUI {
 		// drawn until it is resized.
 		drawing.setVisible(true);
 
-		mouseHandle = new MouseAdapter() {					//Mouse Handle
-			public void mouseReleased(MouseEvent e) {
 
+		mouseHandle = new MouseAdapter() {					//Mouse Handle
+
+			public void mousePressed(MouseEvent e){
+				xStart = e.getX();
+				yStart = e.getY();
+			}
+
+			public void mouseReleased(MouseEvent e) {
 				if(SwingUtilities.isLeftMouseButton(e)){
 					onClick(e, "Origin");
 				}
@@ -499,6 +511,14 @@ public abstract class GUI {
 				redraw();											//Scroll Zoom
 			}
 		});
+
+		drawing.addMouseMotionListener(new MouseAdapter() {
+			public void mouseDragged(MouseEvent e) {
+				onPan(e, xStart, yStart);
+				redraw();											//Scroll Zoom
+			}
+		});
+
 
 		/*
 		 * then make the JTextArea that goes down the bottom. we put this in a
