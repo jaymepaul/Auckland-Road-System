@@ -118,9 +118,9 @@ public abstract class GUI {
 	public JTextArea getTextOutputArea() {
 		return textOutputArea;
 	}
-	
+
 	/**
-	 * Is called when the mouse is scrolled or clicked, 
+	 * Is called when the mouse is scrolled or clicked,
 	 * which is done with the passed MouseWheelEvent object.
 	 */
 	protected abstract void onScroll(MouseWheelEvent e);
@@ -482,17 +482,17 @@ public abstract class GUI {
 
 		mouseHandle = new MouseAdapter() {					//Mouse Handle
 			public void mouseReleased(MouseEvent e) {
-				
+
 				if(SwingUtilities.isLeftMouseButton(e)){
 					onClick(e, "Origin");
 				}
 				else if(SwingUtilities.isRightMouseButton(e)){
 					onClick(e, "Destination");
 				}
-	
+
 			}
 		};
-		drawing.addMouseListener(mouseHandle);					
+		drawing.addMouseListener(mouseHandle);
 		drawing.addMouseWheelListener(new MouseAdapter() {
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				onScroll(e);

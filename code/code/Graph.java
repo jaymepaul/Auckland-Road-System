@@ -52,7 +52,7 @@ public class Graph {
 		this.restrictions = Parser.parseRestrictions(restrictions, this);
 		this.polygons = Parser.parsePolygons(polygonFile, polygons);
 		Parser.parseTrafficLights(traffic, nodes);
-		
+
 
 		findAllSubGraphs();			//Creates a List of List of Nodes that each represent a component of the graph
 	}
@@ -77,7 +77,7 @@ public class Graph {
 				seg.draw(g2, origin, scale);
 			}
 		}
-		
+
 		//Draw Polygons
 		for (Polygon pol : polygons)
 			pol.drawPolygons(g2, screen, origin, scale);
@@ -109,7 +109,7 @@ public class Graph {
 
 	public void setHighlight(Node node, String point) {
 		this.highlightedNode = node;
-		
+
 		if(point == "origin")
 			startNode = node;
 		else if(point == "destination")

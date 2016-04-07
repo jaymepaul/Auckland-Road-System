@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.sql.Time;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -177,7 +176,7 @@ public class Mapper extends GUI {
 
 	@Override
 	protected void onLoad(File nodes, File roads, File segments, File polygons, File restrictions, File traffic) {
-		
+
 		try {
 			graph = new Graph(nodes, roads, segments, polygons, restrictions, traffic);
 		} catch (IOException e) {
@@ -187,18 +186,18 @@ public class Mapper extends GUI {
 		origin = new Location(-250, 250); // close enough
 		scale = 1;
 	}
-	
+
 	@Override
 	protected void onScroll(MouseWheelEvent e) {
 
 		int zoomFactor = e.getWheelRotation();			//Neg - AWAY, Pos - TOWARDS
-		
+
 		if(zoomFactor > 0){
 			if(scale > MIN_ZOOM){
 				scaleOrigin(true);
 				scale /= ZOOM_FACTOR;
 			}
-		
+
 		}else if(zoomFactor < 0){
 			if(scale < MAX_ZOOM){
 				scaleOrigin(false);
@@ -207,12 +206,12 @@ public class Mapper extends GUI {
 		}
 	}
 
-	/**Uses the A* search algorithm to find the Shortest Path 
+	/**Uses the A* search algorithm to find the Shortest Path
 	 * from the given origin and destination Node.
 	 * Highlights the path on the map and prints out the
 	 * roads along the path and its respective distances
 	 * or time.
-	 * 
+	 *
 	 *  @param boolean distTime - toggle to choose between distance/time heuristic
 	 * */
 	@Override
@@ -263,7 +262,7 @@ public class Mapper extends GUI {
 
 	/**Finds all Articulation Points on the graph - Iteratively
 	 * Considers sub components of the graph
-	 * 
+	 *
 	 **/
 	public void findArticulationPoints(){
 
@@ -286,7 +285,7 @@ public class Mapper extends GUI {
 
 	/**Returns the text output of the path
 	 * Eliminates Duplicate Road Names, Gets Max Distance for each Road
-	 * 
+	 *
 	 * @return String - text output of path*/
 	public String getPathTextOutput(List<Segment> path, Node start, Node end){
 
@@ -326,7 +325,7 @@ public class Mapper extends GUI {
 
 		for(Map.Entry<String, Double> e : textPath.entrySet())
 			sb.append("Street: " + e.getKey() + "	Distance To Goal: " + e.getValue() +" km \n");
-		
+
 		sb.append("Total Time Taken : "+getTimeElapsed((long) (AStarSearch.calcTotalTime(path) * 1000))+"\n");
 		sb.append("REACHED END GOAL!");
 
@@ -335,7 +334,7 @@ public class Mapper extends GUI {
 
 	/**Returns the text output of the path
 	 * Omits duplicate road names and includes the max time for each road
-	 * 
+	 *
 	 * @return String - text output of path*/
 	public String getTimePathTextOutput(List<Segment> path, Node start, Node end){
 
@@ -405,16 +404,16 @@ public class Mapper extends GUI {
 	public void reset(){
 		graph.articulationPoints = null;
 	}
-	
+
 	public String getTimeElapsed(long l){
-		
+
 		final long hr = TimeUnit.MILLISECONDS.toHours(l);
 		final long min = TimeUnit.MILLISECONDS.toMinutes(l - TimeUnit.HOURS.toMillis(hr));
 		final long sec = TimeUnit.MILLISECONDS.toSeconds(l - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
 		final long ms = TimeUnit.MINUTES.toMillis(min) - TimeUnit.SECONDS.toMillis(sec);
-		
+
 		return String.format("%02d:%02d:%02d", hr, min, sec);
-		
+
 	}
 
 }

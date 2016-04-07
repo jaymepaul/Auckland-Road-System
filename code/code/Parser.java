@@ -15,7 +15,7 @@ import java.util.Set;
  * three files we're interested in, and returning the relevant data structure.
  * Internally it uses BufferedReaders instead of Scanners to read in the files,
  * as Scanners are pathetically slow.
- * 
+ *
  * @author tony
  */
 public class Parser {
@@ -107,13 +107,13 @@ public class Parser {
 
 				Segment segment = new Segment(graph, roadID, length, node1ID,
 						node2ID, coords);
-				
-				segment.start.getOutNeighbours().add(segment);			
+
+				segment.start.getOutNeighbours().add(segment);
 				segment.end.getInNeighbours().add(segment);				//Initialize Neighbours
 				segment.end.getOutNeighbours().add(segment);
-				
-			
-				
+
+
+
 				set.add(segment);
 			}
 
@@ -124,11 +124,11 @@ public class Parser {
 
 		return set;
 	}
-	
+
 	public static Collection<Restriction> parseRestrictions(File restrictions, Graph graph){
-		
+
 		Set<Restriction> rest = new HashSet<Restriction>();
-		
+
 		if(restrictions!=null){
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(restrictions));
@@ -155,12 +155,12 @@ public class Parser {
 				throw new RuntimeException("file reading failed.");
 			}
 		}
-		
+
 		return rest;
 	}
-	
+
 	public static void parseTrafficLights(File lights, Map<Integer, Node> nodes){
-		
+
 		if(lights!=null){
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(lights));
@@ -171,7 +171,7 @@ public class Parser {
 
 					double lat = asDouble(tokens[0]);
 					double lon = asDouble(tokens[1]);
-					
+
 					Location loc = Location.newFromLatLon(lon, lat);
 					Node node = null;
 					double locDiff = 1000;
@@ -182,7 +182,7 @@ public class Parser {
 							node = n;
 						}
 					}
-					
+
 					if(node!=null)
 						node.setHasLights(true);  	//Set Node to have lights
 				}
@@ -192,55 +192,55 @@ public class Parser {
 				throw new RuntimeException("file reading failed.");
 			}
 		}
-	} 
-	
+	}
+
 	public static List<Polygon> parsePolygons(File file, List<Polygon> polygons) throws IOException{
-		
+
 		if(file!=null){
 			BufferedReader br = new BufferedReader(new FileReader(file));
-			
+
 			String line;
 			String type = null, label = null;
 			int endLevel = 0, cityIdx = 0;
-			
+
 			String coords[];
 			List<Location> data = null;
 			List<List<Location>> multiData = new ArrayList<List<Location>>();
-			
+
 			try {
 				while((line = br.readLine()) != null){
-					
+
 					if(line.equals("[POLYGON]"))
 						line = br.readLine();
 					else if(line.equals("[END]")){
-							
+
 						if(multiData.size() == 1){
 							polygons.add(new Polygon(type, label, endLevel, cityIdx, data, null));		//Create new Polygon & Add to Collection of Polygons
-							
-							type = null; label = null;		//RESET 
+
+							type = null; label = null;		//RESET
 							endLevel = 0; cityIdx = 0;
-							multiData.clear();						
+							multiData.clear();
 						}
-						else if(multiData.size() > 1){					
+						else if(multiData.size() > 1){
 							polygons.add(new Polygon(type, label, endLevel, cityIdx, null, multiData));		//Case for handling multiple data sets
-							
+
 							type = null; label = null; 		//RESET
 							endLevel = 0; cityIdx = 0;
 							multiData.clear();
 						}
-						
+
 						line = br.readLine();
 						line = br.readLine();
 						line = br.readLine();
-						
+
 						if(line == null)				//EOF
 							break;
 					}
-					
+
 					String st[] = line.split("=");
-					
+
 					switch (st[0]){
-					
+
 						case "Type":
 							type = st[1].toString();
 							break;
@@ -253,11 +253,11 @@ public class Parser {
 						case "CityIdx":
 							cityIdx = Integer.parseInt(st[1]);
 							break;
-						
+
 						case "Data0":
 							data = new ArrayList<Location>();
-							coords = st[1].split(",");	
-							
+							coords = st[1].split(",");
+
 							for(int i = 0; i < coords.length; i++){
 									double x = Double.parseDouble(coords[i].substring(1));
 									double y = Double.parseDouble(coords[i+1].substring(0, coords[i+1].length()-1));
@@ -266,11 +266,11 @@ public class Parser {
 							}
 							multiData.add(data);
 							break;
-							
+
 						case "Data1":
 							data = new ArrayList<Location>();
-							coords = st[1].split(",");	
-							
+							coords = st[1].split(",");
+
 							for(int i = 0; i < coords.length; i++){
 									double x = Double.parseDouble(coords[i].substring(1));
 									double y = Double.parseDouble(coords[i+1].substring(0, coords[i+1].length()-1));
@@ -284,10 +284,10 @@ public class Parser {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
 			br.close();
 		}
-		
+
 		return polygons;
 	}
 

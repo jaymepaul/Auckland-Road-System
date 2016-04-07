@@ -179,10 +179,10 @@ public class AStarSearch {
 
 
 				if(!to.isVisited()){
-					
+
 					double costToNeigh = fn.getTimeCostToHere() + ( (s.length/getRoadSpeed(s.road.speed)) * 3600) ;
 					double estTotal = costToNeigh + calcTimeHeuristic(to, destination);
-					
+
 					if(to.hasLights){		// || node.hasLights
 						System.out.println("Traffic Light @ "+to.nodeID);
 						estTotal += 5;		//Add Extra Cost if To Node has lights - Reduce its priority, more expensive
@@ -199,7 +199,7 @@ public class AStarSearch {
 
 	/**Calculates total Time heuristic estimate based on
 	 * shortest path considers speed limits and road class
-	 * 
+	 *
 	 * @retrun Time in seconds*/
 	public static double calcTimeHeuristic(Node start, Node end){
 
@@ -224,14 +224,14 @@ public class AStarSearch {
 
 		return distance;
 	}
-	
+
 	public static double calcTotalTime(List<Segment> path){
-		
+
 		double time = 0;
-		
+
 		for(Segment s : path)
 			time += ((s.length/s.road.speed) * 3600);
-		
+
 		return time;
 	}
 
@@ -279,7 +279,7 @@ public class AStarSearch {
 
 
 	/**Ensures that the path to be highlighted excludes any incorrect routes/paths
-	 * 
+	 *
 	 * @return List<Segment> - path to be highlighted*/
 	public List<Segment> trimPath(List<Segment> path, List<FringeNode> fnList){
 
@@ -310,7 +310,7 @@ public class AStarSearch {
 	}
 
 	/**Ensures that the path to be highlighted excludes any incorrect routes/paths
-	 * 
+	 *
 	 *  @return List<Segment> - path to be highlighted*/
 	public List<Segment> trimTimePath(List<Segment> path, List<FringeTimeNode> fnList){
 
@@ -372,7 +372,7 @@ public class AStarSearch {
 	}
 
 	/**Gets the right road name based on the points given
-	 * 
+	 *
 	 * @return String roadName*/
 	private String getRoadNameFromPoints(Node from, Node neighbor) {
 
@@ -391,14 +391,14 @@ public class AStarSearch {
 
 		return name;
 	}
-	
+
 	/**Parses the road speed depending on the number given as input
-	 * 
+	 *
 	 * @return int speed - the speed in km/h */
 	public int getRoadSpeed(int speed){
-		
+
 		int spd = 0;
-	
+
 		switch(speed){
 		case 0:
 			spd = 5;
@@ -425,10 +425,10 @@ public class AStarSearch {
 			spd = 150;		//No Limit
 			break;
 		}
-		
+
 		return spd;
 	}
-	
+
 	public Node getOrigin() {
 		return origin;
 	}
