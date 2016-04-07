@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,6 +33,8 @@ public class Graph {
 	Collection<Segment> segments;
 	// restrictions
 	Collection<Restriction> restrictions;
+	// polygons
+	List<Polygon> polygons = new ArrayList<Polygon>();
 
 	Collection<Road> highlightedRoads = new HashSet<>();
 	Collection<Segment> highlightedSegments = new ArrayList<>();
@@ -42,12 +45,14 @@ public class Graph {
 	Node highlightedNode, startNode, endNode;			//A* Variables
 	String point = null;
 
-	public Graph(File nodesFile, File roads, File segments, File polygons, File restrictions, File traffic) {
+	public Graph(File nodesFile, File roads, File segments, File polygonFile, File restrictions, File traffic) throws IOException {
 		this.nodes = Parser.parseNodes(nodesFile, this);
 		this.roads = Parser.parseRoads(roads, this);
 		this.segments = Parser.parseSegments(segments, this);
 		this.restrictions = Parser.parseRestrictions(restrictions, this);
+		this.polygons = Parser.parsePolygons(polygonFile, polygons);
 		Parser.parseTrafficLights(traffic, nodes);
+		
 
 		findAllSubGraphs();			//Creates a List of List of Nodes that each represent a component of the graph
 	}
@@ -72,6 +77,10 @@ public class Graph {
 				seg.draw(g2, origin, scale);
 			}
 		}
+		
+		//Draw Polygons
+		for (Polygon pol : polygons)
+			pol.drawPolygons(g2, screen, origin, scale);
 
 		//Draw Highlighted Segments
 		for (Segment seg : highlightedSegments)

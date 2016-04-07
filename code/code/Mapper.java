@@ -3,9 +3,16 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.io.File;
+import java.io.IOException;
+import java.sql.Time;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,6 +22,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the main class for the mapping program. It extends the GUI abstract
@@ -39,7 +47,7 @@ public class Mapper extends GUI {
 	// defines how much you zoom in/out per button press, and the maximum and
 	// minimum zoom levels.
 	public static final double ZOOM_FACTOR = 1.3;
-	public static final double MIN_ZOOM = 1, MAX_ZOOM = 200;
+	public static final double MIN_ZOOM = 0.5, MAX_ZOOM = 200;
 
 	// how far away from a node you can click before it isn't counted.
 	public static final double MAX_CLICKED_DISTANCE = 0.15;
@@ -169,10 +177,34 @@ public class Mapper extends GUI {
 
 	@Override
 	protected void onLoad(File nodes, File roads, File segments, File polygons, File restrictions, File traffic) {
-		graph = new Graph(nodes, roads, segments, polygons, restrictions, traffic);
+		
+		try {
+			graph = new Graph(nodes, roads, segments, polygons, restrictions, traffic);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		trie = new Trie(graph.roads.values());
 		origin = new Location(-250, 250); // close enough
 		scale = 1;
+	}
+	
+	@Override
+	protected void onScroll(MouseWheelEvent e) {
+
+		int zoomFactor = e.getWheelRotation();			//Neg - AWAY, Pos - TOWARDS
+		
+		if(zoomFactor > 0){
+			if(scale > MIN_ZOOM){
+				scaleOrigin(true);
+				scale /= ZOOM_FACTOR;
+			}
+		
+		}else if(zoomFactor < 0){
+			if(scale < MAX_ZOOM){
+				scaleOrigin(false);
+				scale *= ZOOM_FACTOR;								//Zooming
+			}
+		}
 	}
 
 	/**Uses the A* search algorithm to find the Shortest Path 
@@ -247,6 +279,7 @@ public class Mapper extends GUI {
 		sb.append("Articulation Points: \n");
 		for(Node art: articulationPoints)
 			sb.append("NodeID: "+art.nodeID+ "	Location: "+art.location.x+","+art.location.y+"\n");
+		sb.append("Total Number of Articulation Points: "+articulationPoints.size());
 		getTextOutputArea().setText(sb.toString());
 
 	}
@@ -294,7 +327,7 @@ public class Mapper extends GUI {
 		for(Map.Entry<String, Double> e : textPath.entrySet())
 			sb.append("Street: " + e.getKey() + "	Distance To Goal: " + e.getValue() +" km \n");
 		
-		sb.append("Total Time Taken : "+AStarSearch.calcTotalTime(path)+"s \n");
+		sb.append("Total Time Taken : "+getTimeElapsed((long) (AStarSearch.calcTotalTime(path) * 1000))+"\n");
 		sb.append("REACHED END GOAL!");
 
 		return sb.toString();
@@ -308,7 +341,7 @@ public class Mapper extends GUI {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
-		"Start At Intersection: "+start.nodeID+ "	Total Time To Goal: "+ AStarSearch.calcTimeHeuristic(start, end)+"s \n");
+		"Start At Intersection: "+start.nodeID+ "	Total Estimated Time To Goal: "+ getTimeElapsed((long)(AStarSearch.calcTimeHeuristic(start, end)*3600))+" \n");
 
 		String name = null;
 		double time = 0;
@@ -341,7 +374,7 @@ public class Mapper extends GUI {
 		}
 
 		for(Map.Entry<String, Double> e : textPath.entrySet())
-			sb.append("Street: " + e.getKey() + "	Time To Goal: " + e.getValue() +"s \n");
+			sb.append("Street: " + e.getKey() + "	Time To Goal: " + getTimeElapsed( (long) (e.getValue()*3600)) +" \n");
 
 		sb.append("REACHED END GOAL!");
 
@@ -371,6 +404,17 @@ public class Mapper extends GUI {
 
 	public void reset(){
 		graph.articulationPoints = null;
+	}
+	
+	public String getTimeElapsed(long l){
+		
+		final long hr = TimeUnit.MILLISECONDS.toHours(l);
+		final long min = TimeUnit.MILLISECONDS.toMinutes(l - TimeUnit.HOURS.toMillis(hr));
+		final long sec = TimeUnit.MILLISECONDS.toSeconds(l - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
+		final long ms = TimeUnit.MINUTES.toMillis(min) - TimeUnit.SECONDS.toMillis(sec);
+		
+		return String.format("%02d:%02d:%02d", hr, min, sec);
+		
 	}
 
 }

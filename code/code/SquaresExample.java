@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +121,12 @@ public class SquaresExample extends GUI {
 
 	@Override
 	protected void reset() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void onScroll(MouseWheelEvent e) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -118,6 +118,12 @@ public abstract class GUI {
 	public JTextArea getTextOutputArea() {
 		return textOutputArea;
 	}
+	
+	/**
+	 * Is called when the mouse is scrolled or clicked, 
+	 * which is done with the passed MouseWheelEvent object.
+	 */
+	protected abstract void onScroll(MouseWheelEvent e);
 
 	/**
 	 * @return the JTextField used as a search box in the top-right, which can
@@ -486,10 +492,11 @@ public abstract class GUI {
 	
 			}
 		};
-		drawing.addMouseListener(mouseHandle);						//TEST
-
+		drawing.addMouseListener(mouseHandle);					
 		drawing.addMouseWheelListener(new MouseAdapter() {
 			public void mouseWheelMoved(MouseWheelEvent e) {
+				onScroll(e);
+				redraw();											//Scroll Zoom
 			}
 		});
 

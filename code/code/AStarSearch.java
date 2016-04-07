@@ -114,7 +114,7 @@ public class AStarSearch {
 
 		List<Segment> timePath = new ArrayList<Segment>();
 
-		//Admissable Heuristic - Time
+		//Time Heuristic
 		double totalEstTime = calcTimeHeuristic(origin, destination);
 
 		PriorityQueue<FringeTimeNode> fringe = new PriorityQueue<FringeTimeNode>();
