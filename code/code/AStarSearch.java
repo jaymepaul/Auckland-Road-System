@@ -225,15 +225,6 @@ public class AStarSearch {
 		return distance;
 	}
 
-	public static double calcTotalTime(List<Segment> path){
-
-		double time = 0;
-
-		for(Segment s : path)
-			time += ((s.length/s.road.speed) * 3600);
-
-		return time;
-	}
 
 	/**Returns TRUE if the segment in question has restrictions applicable to it*/
 	public boolean isRestricted(Segment prevSeg, Segment curSeg, Node n){
@@ -395,7 +386,7 @@ public class AStarSearch {
 	/**Parses the road speed depending on the number given as input
 	 *
 	 * @return int speed - the speed in km/h */
-	public int getRoadSpeed(int speed){
+	public static int getRoadSpeed(int speed){
 
 		int spd = 0;
 

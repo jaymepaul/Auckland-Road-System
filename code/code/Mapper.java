@@ -6,21 +6,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Time;
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Stack;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -155,7 +144,7 @@ public class Mapper extends GUI {
 			e.printStackTrace();
 		}
 		trie = new Trie(graph.roads);
-		origin = new Location(-250, 250); // close enough
+		origin = new Location(-650, 250); // close enough
 		scale = 1;
 	}
 
@@ -242,7 +231,7 @@ public class Mapper extends GUI {
 
 			if(graph.checkRoute(start, end)){
 
-				aStar.setOrigin(start); aStar.setDestination(end);		//TEST: 2707 - 3068, DIST V TIME, 2707-30126
+				aStar.setOrigin(start); aStar.setDestination(end);		//TEST: 32743-12639, 15585-14197
 				List<Segment> timePath = aStar.searchPathTime();
 
 				getTextOutputArea().setText(getTimePathTextOutput(timePath, start, end));
@@ -287,12 +276,8 @@ public class Mapper extends GUI {
 	 * @return String - text output of path*/
 	public String getPathTextOutput(List<Segment> path, Node start, Node end){
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
-		"Start At Intersection: "+start.nodeID+"	Total Distance To Goal: "+ AStarSearch.calcDistHeuristic(start, end)+" km \n");
-
 		String name = null;
-		double dist = 0;
+		double dist = 0, totalDist = 0, totalTime = 0;
 		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
 
 		name = path.get(path.size()-1).road.name;
@@ -304,15 +289,14 @@ public class Mapper extends GUI {
 				if(i == 0)
 					textPath.put(name, dist);
 
-				if(path.get(i).getPathDistance() > dist)
-					dist = path.get(i).getPathDistance();
+				dist += path.get(i).length;
 			}
 			else if(path.get(i).road.name != name){
 
 				textPath.put(name, dist);
 
 				name = path.get(i).road.name;
-				dist = path.get(i).getPathDistance();
+				dist += path.get(i).length;
 
 				if(i == 0)
 					textPath.put(name, dist);
@@ -321,11 +305,16 @@ public class Mapper extends GUI {
 
 		}
 
-		for(Map.Entry<String, Double> e : textPath.entrySet())
-			sb.append("Street: " + e.getKey() + "	Distance To Goal: " + e.getValue() +" km \n");
-
-		sb.append("Total Time Taken : "+getTimeElapsed((long) (AStarSearch.calcTotalTime(path) * 1000))+"\n");
-		sb.append("REACHED END GOAL!");
+		StringBuilder sb = new StringBuilder();
+		DecimalFormat df = new DecimalFormat("####0.00");
+		
+		for(Map.Entry<String, Double> e : textPath.entrySet()){
+			sb.append(e.getKey() +"\t"+ df.format(e.getValue()) +"km \n");
+			totalDist += e.getValue();
+		}
+		sb.append("\nTotal Distance: "+df.format(totalDist)+"km \n");
+//		sb.append("Total Time Taken : "+getTimeElapsed((long) (AStarSearch.calcTotalTime(path) * 1000))+"\n");
+		sb.append("\nREACHED END GOAL!");
 
 		return sb.toString();
 	}
@@ -336,12 +325,8 @@ public class Mapper extends GUI {
 	 * @return String - text output of path*/
 	public String getTimePathTextOutput(List<Segment> path, Node start, Node end){
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("START: "+start.nodeID+"	END: "+end.nodeID+"\n"+
-		"Start At Intersection: "+start.nodeID+ "	Total Estimated Time To Goal: "+ getTimeElapsed((long)(AStarSearch.calcTimeHeuristic(start, end)*3600))+" \n");
-
 		String name = null;
-		double time = 0;
+		double time = 0, totalTime = 0;
 		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
 
 		name = path.get(path.size()-1).road.name;
@@ -353,27 +338,30 @@ public class Mapper extends GUI {
 				if(i == 0)
 					textPath.put(name, time);
 
-				if(path.get(i).getPathTime() > time)
-					time = path.get(i).getPathTime();
+				time += (path.get(i).length / AStarSearch.getRoadSpeed(path.get(i).road.speed));
 			}
 			else if(path.get(i).road.name != name){
 
 				textPath.put(name, time);
 
 				name = path.get(i).road.name;
-				time = path.get(i).getPathTime();
+				time += (path.get(i).length / AStarSearch.getRoadSpeed(path.get(i).road.speed));
 
 				if(i == 0)
 					textPath.put(name, time);
 
 			}
-
 		}
 
-		for(Map.Entry<String, Double> e : textPath.entrySet())
-			sb.append("Street: " + e.getKey() + "	Time To Goal: " + getTimeElapsed( (long) (e.getValue()*3600)) +" \n");
-
-		sb.append("REACHED END GOAL!");
+		StringBuilder sb = new StringBuilder();
+		for(Map.Entry<String, Double> e : textPath.entrySet()){
+			sb.append(e.getKey() +"\t"+ getTimeElapsed( (long) (e.getValue()*3600)) +" \n");
+			totalTime += e.getValue();
+		}
+		DecimalFormat df = new DecimalFormat("####0.00");
+		sb.append("\nTotal Time: "+getTimeElapsed((long) (totalTime * 3600))+"\n");
+//		sb.append("Total Distance: "+  df.format(getTotalDistance(path))+"km \n");
+		sb.append("\nREACHED END GOAL!");
 
 		return sb.toString();
 	}
@@ -403,19 +391,16 @@ public class Mapper extends GUI {
 		graph.articulationPoints = null;
 	}
 
-	public String getTimeElapsed(long l){
+	public String getTimeElapsed(long seconds){
 
-		final long hr = TimeUnit.MILLISECONDS.toHours(l);
-		final long min = TimeUnit.MILLISECONDS.toMinutes(l - TimeUnit.HOURS.toMillis(hr));
-		final long sec = TimeUnit.MILLISECONDS.toSeconds(l - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
-		final long ms = TimeUnit.MINUTES.toMillis(min) - TimeUnit.SECONDS.toMillis(sec);
-
-		return String.format("%02d:%02d:%02d", hr, min, sec);
-
+		long s = seconds % 60;
+	    long m = (seconds / 60) % 60;
+	    long h = (seconds / (60 * 60)) % 24;
+	    
+	    return String.format("%d:%02d:%02d", h,m,s);
 	}
 
-
-
+	
 }
 
 // code for COMP261 assignments
