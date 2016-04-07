@@ -83,6 +83,8 @@ public class Graph {
 			pol.drawPolygons(g2, screen, origin, scale);
 
 		//Draw Highlighted Segments
+		g2.setColor(Mapper.HIGHLIGHT_COLOUR);
+		g2.setStroke(new BasicStroke(3));
 		for (Segment seg : highlightedSegments)
 			seg.draw(g2, origin, scale);
 

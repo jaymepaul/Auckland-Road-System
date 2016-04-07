@@ -39,7 +39,6 @@ public class Polygon {
 		this.multiData = multiData;
 
 		this.color = colorIdentifier(type);
-		//this.color = color.BLUE;
 	}
 
 
