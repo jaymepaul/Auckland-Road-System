@@ -5,20 +5,20 @@ public class FringeNode implements Comparable<FringeNode> {
 	private Node parent;
 	private double costToHere;
 	private double totEstCost;
-	
+
 	private double totalCostToGoal;
 	private double distToGoal;
-	
+
 	public FringeNode(Node node, Node parent, double costToHere, double totEstCost){
 		this.node = node;
 		this.parent = parent;
 		this.costToHere = costToHere;
 		this.totEstCost = totEstCost;
-		
+
 		this.totalCostToGoal = totEstCost - costToHere;		//Purely Heuristic
 	}
 
-	
+
 
 	public Node getNode() {
 		return node;
@@ -51,7 +51,7 @@ public class FringeNode implements Comparable<FringeNode> {
 	}
 
 
-	
+
 
 	public double getTotEstCost() {
 		return totEstCost;
@@ -63,7 +63,7 @@ public class FringeNode implements Comparable<FringeNode> {
 		this.totEstCost = totEstCost;
 	}
 
-	
+
 
 	public double getDistToGoal() {
 		return distToGoal;
@@ -87,18 +87,18 @@ public class FringeNode implements Comparable<FringeNode> {
 
 	@Override
 	public int compareTo(FringeNode fn) {
-		
+
 		int cmp = 0;
-		
+
 		if (totalCostToGoal > fn.totalCostToGoal)
 			cmp = 1;
 		else if(totalCostToGoal < fn.totalCostToGoal)
 			cmp = -1;
 		else
 			cmp = 0;
-		
+
 		return cmp;
 	}
-	
-	
+
+
 }

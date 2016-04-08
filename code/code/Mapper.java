@@ -309,7 +309,7 @@ public class Mapper extends GUI {
 				if( (! visNames.containsKey(segI.road.name)) && (visNames.get(segI.road.name) != segI.road.city) )
 					visNames.put(name, city);
 
-				txtPath.add(new DisplayNode(name, city, dist, segI.road.speed));
+				txtPath.add(new DisplayNode(name, city, dist, AStarSearch.getRoadSpeed(segI.road.speed)));
 			}
 		}
 
@@ -321,11 +321,11 @@ public class Mapper extends GUI {
 		for(DisplayNode nd : txtPath){
 			sb.append(nd.getName() +" , "+ nd.getCity()+"\t"+df.format(nd.getDist())+"km \n");
 			totalDist += nd.getDist();
-			totalTime += nd.getDist() / nd.getSpeed();
+			totalTime += ( (nd.getDist() / nd.getSpeed()) * 3600 );
 		}
 
 		sb.append("\nTotal Distance: "+df.format(totalDist)+"km \n");
-		sb.append("Total Time: "+getTimeElapsed((long) (totalTime * 1000))+"\n\n");
+		sb.append("Total Time: "+getTimeElapsed((long) (totalTime))+"\n\n");
 		sb.append("REACHED END GOAL!");
 
 		return sb.toString();
@@ -368,7 +368,7 @@ public class Mapper extends GUI {
 				if( (! visNames.containsKey(segI.road.name)) && (visNames.get(segI.road.name) != segI.road.city) )
 					visNames.put(name, city);
 
-				txtPath.add(new DisplayNode(name, city, dist, segI.road.speed));
+				txtPath.add(new DisplayNode(name, city, dist, AStarSearch.getRoadSpeed(segI.road.speed)));
 
 			}
 		}
@@ -379,13 +379,13 @@ public class Mapper extends GUI {
 		sb.append("Finding Fastest Path.. \n\n");
 
 		for(DisplayNode nd : txtPath){
-			sb.append(nd.getName() +" , "+ nd.getCity()+"\t"+df.format(nd.getDist())+"km"+ "\t"+ getTimeElapsed( (long) ((nd.getDist()/nd.getSpeed()) * 1000) )+"\n") ;
+			sb.append(nd.getName() +" , "+ nd.getCity()+"\t"+df.format(nd.getDist())+"km"+ "\t"+ getTimeElapsed( (long) ( (nd.getDist()/nd.getSpeed()) * 3600)) +"\n") ;
 			totalDist += nd.getDist();
-			totalTime += nd.getDist() / nd.getSpeed();
+			totalTime += ( (nd.getDist() / nd.getSpeed()) * 3600 );
 		}
 
 
-		sb.append("\nTotal Time: "+getTimeElapsed((long) (totalTime * 1000))+"\n");
+		sb.append("\nTotal Time: "+getTimeElapsed((long) (totalTime))+"\n");
 		sb.append("Total Distance: "+  df.format(totalDist)+"km \n");
 		sb.append("\nREACHED END GOAL!");
 

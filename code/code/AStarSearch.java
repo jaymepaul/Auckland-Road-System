@@ -44,8 +44,8 @@ public class AStarSearch {
 		while (!fringe.isEmpty()) {
 
 			FringeNode fn = fringe.poll(); 			//Poll the most promising Node - based of lowest heuristic estimate
-			Node node = fn.getNode();				//GOOD TEST 14392 - 14795, 15150-15510 , 17613-11430 DISCONNECTED, WORKING - 14655, 15152
-														//FLAW AT 37368
+			Node node = fn.getNode();
+
 			displayInfo(fn, calcDistHeuristic(origin, destination));
 
 			if(fn.getParent()!=null){				//Exception: Initial Start Node
@@ -137,6 +137,8 @@ public class AStarSearch {
 
 			displayTimeInfo(fn, totalEstTime);
 
+			System.out.println("CHOSEN PRIORITY: " +fn.getTotalTimeCostToGoal());
+
 			if(fn.getParent()!=null){
 
 				Segment seg = graph.getSegmentFromPoints(fn.getParent(), node);
@@ -154,6 +156,7 @@ public class AStarSearch {
 			if(node == destination)
 				break;
 
+			System.out.println("================================================");
 			Node to = null;
 			for(Segment s : node.getOutNeighbours()){
 
@@ -183,11 +186,12 @@ public class AStarSearch {
 					double costToNeigh = fn.getTimeCostToHere() + ( (s.length/getRoadSpeed(s.road.speed)) * 3600) ;
 					double estTotal = costToNeigh + calcTimeHeuristic(to, destination);
 
-					if(to.hasLights){		// || node.hasLights
+					if(to.hasLights || node.hasLights){		// || node.hasLights
 						System.out.println("Traffic Light @ "+to.nodeID);
-						estTotal += 5;		//Add Extra Cost if To Node has lights - Reduce its priority, more expensive
+						estTotal += 3;		//Add Extra Cost if To Node has lights - Reduce its priority, more expensive
 					}
 
+					System.out.println("PRIORITY: " + (estTotal - costToNeigh));
 					fringe.offer(new FringeTimeNode(to, node, costToNeigh, estTotal));
 				}
 			}
