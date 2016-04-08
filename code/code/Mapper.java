@@ -7,6 +7,7 @@ import java.awt.event.MouseWheelEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -277,49 +278,50 @@ public class Mapper extends GUI {
 	public String getPathTextOutput(List<Segment> path){
 
 		double totalDist = 0, totalTime = 0;
-		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
+		List<DisplayNode> txtPath = new ArrayList<DisplayNode>();
 
 		for(Segment s : path)
 			s.setNameVis(false);
 
 		for(int i = path.size()-1; i >= 0; i--){
-			
+
 			Segment segI = path.get(i);
-			
+
 			if( ! segI.isNameVis() ){
-				
+
 				String city = segI.road.city;
 				String name = segI.road.name;
 				double dist = segI.length;
-				
+
 				for(int j = i - 1; j >=0 ; j--){
-					
+
 					Segment segJ = path.get(j);
-					
+
 					if( ! segJ.isNameVis()){
-						if(name == segJ.road.name && city == segJ.road.city)
+						if(name == segJ.road.name && city == segJ.road.city){
 							dist += segJ.length;
+							segJ.setNameVis(true);
+						}
 					}
 				}
-				
-				totalDist += dist;
-				totalTime += (totalDist / AStarSearch.getRoadSpeed(segI.road.speed));
+
+
 				segI.setNameVis(true);
-				
-				textPath.put(name, dist);
-				
+				txtPath.add(new DisplayNode(name, city, dist, segI.road.speed));
 			}
 		}
 
 		StringBuilder sb = new StringBuilder();
 		DecimalFormat df = new DecimalFormat("####0.00");
-		
+
 		sb.append("Finding Shortest Path.. \n\n");
-		
-		for(Map.Entry<String, Double> e : textPath.entrySet())
-			sb.append(e.getKey() +"\t"+ df.format(e.getValue()) +"km \n");
-		
-		
+
+		for(DisplayNode nd : txtPath){
+			sb.append(nd.getName() +" , "+ nd.getCity()+"\t"+df.format(nd.getDist())+"km \n");
+			totalDist += nd.getDist();
+			totalTime += nd.getDist() / nd.getSpeed();
+		}
+
 		sb.append("\nTotal Distance: "+df.format(totalDist)+"km \n");
 		sb.append("Total Time: "+getTimeElapsed((long) (totalTime * 1000))+"\n\n");
 		sb.append("REACHED END GOAL!");
@@ -335,52 +337,51 @@ public class Mapper extends GUI {
 
 
 		double totalTime = 0, totalDist = 0;
-		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
-		
+		List<DisplayNode> txtPath = new ArrayList<DisplayNode>();
+
 		for(Segment s : path)
 			s.setNameVis(false);
 
 		for(int i = path.size()-1; i >= 0; i--){
-			
+
 			Segment segI = path.get(i);
-			
+
 			if( ! segI.isNameVis() ){
-				
+
 				String city = segI.road.city;
 				String name = segI.road.name;
 				double dist = segI.length;
-				
+
 				for(int j = i - 1; j >=0 ; j--){
-					
+
 					Segment segJ = path.get(j);
-					
+
 					if( ! segJ.isNameVis()){
-						if(name == segJ.road.name && city == segJ.road.city)
+						if(name == segJ.road.name && city == segJ.road.city){
 							dist += segJ.length;
+							segJ.setNameVis(true);
+						}
 					}
 				}
-				
-				double time = dist / AStarSearch.getRoadSpeed(segI.road.speed);
-				
-				totalDist += dist;
-				totalTime += (totalDist / AStarSearch.getRoadSpeed(segI.road.speed));
+
 				segI.setNameVis(true);
-				
-				
-				textPath.put(name, time);
-				
+				txtPath.add(new DisplayNode(name, city, dist, segI.road.speed));
+
 			}
 		}
-		
-		
+
+
 		StringBuilder sb = new StringBuilder();
-		
-		sb.append("Finding Fastest Path.. \n\n");
-		
-		for(Map.Entry<String, Double> e : textPath.entrySet())
-			sb.append(e.getKey() +"\t"+ getTimeElapsed( (long) (e.getValue()*1000)) +" \n");
-		
 		DecimalFormat df = new DecimalFormat("####0.00");
+		sb.append("Finding Fastest Path.. \n\n");
+
+		for(DisplayNode nd : txtPath){
+			sb.append(nd.getName() +" , "+ nd.getCity()+"\t"+df.format(nd.getDist())+"km"+ "\t"+ getTimeElapsed( (long) ((nd.getDist()/nd.getSpeed()) * 1000) )+"\n") ;
+			totalDist += nd.getDist();
+			totalTime += nd.getDist() / nd.getSpeed();
+		}
+
+
 		sb.append("\nTotal Time: "+getTimeElapsed((long) (totalTime * 1000))+"\n");
 		sb.append("Total Distance: "+  df.format(totalDist)+"km \n");
 		sb.append("\nREACHED END GOAL!");
@@ -418,11 +419,11 @@ public class Mapper extends GUI {
 		long s = seconds % 60;
 	    long m = (seconds / 60) % 60;
 	    long h = (seconds / (60 * 60)) % 24;
-	    
+
 	    return String.format("%d:%02d:%02d", h,m,s);
 	}
 
-	
+
 }
 
 // code for COMP261 assignments
