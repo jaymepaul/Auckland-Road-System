@@ -20,8 +20,6 @@ public class Segment {
 	private double pathDistance;
 	private double pathTime;
 	private Color color;
-	
-	private boolean nameVis;
 
 	public Segment(Graph graph, int roadID, double length, int node1ID,
 			int node2ID, double[] coords) {
@@ -83,15 +81,6 @@ public class Segment {
 		this.color = color;
 	}
 
-	public boolean isNameVis() {
-		return nameVis;
-	}
-
-	public void setNameVis(boolean nameVis) {
-		this.nameVis = nameVis;
-	}
-
-	
 
 }
 

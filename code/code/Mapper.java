@@ -279,34 +279,36 @@ public class Mapper extends GUI {
 
 		double totalDist = 0, totalTime = 0;
 		List<DisplayNode> txtPath = new ArrayList<DisplayNode>();
-
-		for(Segment s : path)
-			s.setNameVis(false);
+		LinkedHashMap<String, String> visNames = new LinkedHashMap<String, String>();
 
 		for(int i = path.size()-1; i >= 0; i--){
 
 			Segment segI = path.get(i);
 
-			if( ! segI.isNameVis() ){
+			if( (! visNames.containsKey(segI.road.name)) && (visNames.get(segI.road.name) != segI.road.city) ){
 
 				String city = segI.road.city;
 				String name = segI.road.name;
 				double dist = segI.length;
 
+				System.out.println("Name: "+name+"\t City: "+city);
+
 				for(int j = i - 1; j >=0 ; j--){
 
 					Segment segJ = path.get(j);
 
-					if( ! segJ.isNameVis()){
-						if(name == segJ.road.name && city == segJ.road.city){
-							dist += segJ.length;
-							segJ.setNameVis(true);
-						}
+					if(name == segJ.road.name && city == segJ.road.city){
+						dist += segJ.length;
+
+						if( (! visNames.containsKey(segJ.road.name)) && (visNames.get(segJ.road.name) != segJ.road.city) )
+							visNames.put(name, city);
+
 					}
 				}
 
+				if( (! visNames.containsKey(segI.road.name)) && (visNames.get(segI.road.name) != segI.road.city) )
+					visNames.put(name, city);
 
-				segI.setNameVis(true);
 				txtPath.add(new DisplayNode(name, city, dist, segI.road.speed));
 			}
 		}
@@ -338,15 +340,13 @@ public class Mapper extends GUI {
 
 		double totalTime = 0, totalDist = 0;
 		List<DisplayNode> txtPath = new ArrayList<DisplayNode>();
-
-		for(Segment s : path)
-			s.setNameVis(false);
+		LinkedHashMap<String, String> visNames = new LinkedHashMap<String, String>();
 
 		for(int i = path.size()-1; i >= 0; i--){
 
 			Segment segI = path.get(i);
 
-			if( ! segI.isNameVis() ){
+			if( (! visNames.containsKey(segI.road.name)) && (visNames.get(segI.road.name) != segI.road.city) ){
 
 				String city = segI.road.city;
 				String name = segI.road.name;
@@ -356,15 +356,18 @@ public class Mapper extends GUI {
 
 					Segment segJ = path.get(j);
 
-					if( ! segJ.isNameVis()){
-						if(name == segJ.road.name && city == segJ.road.city){
-							dist += segJ.length;
-							segJ.setNameVis(true);
-						}
+					if(name == segJ.road.name && city == segJ.road.city){
+
+						dist += segJ.length;
+
+						if( (! visNames.containsKey(segJ.road.name)) && (visNames.get(segJ.road.name) != segJ.road.city) )
+							visNames.put(name, city);
 					}
 				}
 
-				segI.setNameVis(true);
+				if( (! visNames.containsKey(segI.road.name)) && (visNames.get(segI.road.name) != segI.road.city) )
+					visNames.put(name, city);
+
 				txtPath.add(new DisplayNode(name, city, dist, segI.road.speed));
 
 			}
