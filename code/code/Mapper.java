@@ -216,7 +216,7 @@ public class Mapper extends GUI {
 				aStar.setOrigin(start); aStar.setDestination(end);
 				List<Segment> path = aStar.searchDist();				//Perform AStar Search - DIST
 
-				getTextOutputArea().setText(getPathTextOutput(path, start, end));
+				getTextOutputArea().setText(getPathTextOutput(path));
 				graph.setHighlightPath(path, start, end);						//Highlight and Display Path
 
 			}
@@ -234,7 +234,7 @@ public class Mapper extends GUI {
 				aStar.setOrigin(start); aStar.setDestination(end);		//TEST: 32743-12639, 15585-14197
 				List<Segment> timePath = aStar.searchPathTime();
 
-				getTextOutputArea().setText(getTimePathTextOutput(timePath, start, end));
+				getTextOutputArea().setText(getTimePathTextOutput(timePath));
 				graph.setHighlightPath(timePath, start, end);						//Highlight and Display Path
 			}
 			else if(!graph.checkRoute(start, end)){
@@ -274,47 +274,55 @@ public class Mapper extends GUI {
 	 * Eliminates Duplicate Road Names, Gets Max Distance for each Road
 	 *
 	 * @return String - text output of path*/
-	public String getPathTextOutput(List<Segment> path, Node start, Node end){
+	public String getPathTextOutput(List<Segment> path){
 
-		String name = null;
-		double dist = 0, totalDist = 0, totalTime = 0;
+		double totalDist = 0, totalTime = 0;
 		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
 
-		name = path.get(path.size()-1).road.name;
+		for(Segment s : path)
+			s.setNameVis(false);
 
 		for(int i = path.size()-1; i >= 0; i--){
-
-			if(path.get(i).road.name == name){
-
-				if(i == 0)
-					textPath.put(name, dist);
-
-				dist += path.get(i).length;
-			}
-			else if(path.get(i).road.name != name){
-
+			
+			Segment segI = path.get(i);
+			
+			if( ! segI.isNameVis() ){
+				
+				String city = segI.road.city;
+				String name = segI.road.name;
+				double dist = segI.length;
+				
+				for(int j = i - 1; j >=0 ; j--){
+					
+					Segment segJ = path.get(j);
+					
+					if( ! segJ.isNameVis()){
+						if(name == segJ.road.name && city == segJ.road.city)
+							dist += segJ.length;
+					}
+				}
+				
+				totalDist += dist;
+				totalTime += (totalDist / AStarSearch.getRoadSpeed(segI.road.speed));
+				segI.setNameVis(true);
+				
 				textPath.put(name, dist);
-
-				name = path.get(i).road.name;
-				dist += path.get(i).length;
-
-				if(i == 0)
-					textPath.put(name, dist);
-
+				
 			}
-
 		}
 
 		StringBuilder sb = new StringBuilder();
 		DecimalFormat df = new DecimalFormat("####0.00");
 		
-		for(Map.Entry<String, Double> e : textPath.entrySet()){
+		sb.append("Finding Shortest Path.. \n\n");
+		
+		for(Map.Entry<String, Double> e : textPath.entrySet())
 			sb.append(e.getKey() +"\t"+ df.format(e.getValue()) +"km \n");
-			totalDist += e.getValue();
-		}
+		
+		
 		sb.append("\nTotal Distance: "+df.format(totalDist)+"km \n");
-//		sb.append("Total Time Taken : "+getTimeElapsed((long) (AStarSearch.calcTotalTime(path) * 1000))+"\n");
-		sb.append("\nREACHED END GOAL!");
+		sb.append("Total Time: "+getTimeElapsed((long) (totalTime * 1000))+"\n\n");
+		sb.append("REACHED END GOAL!");
 
 		return sb.toString();
 	}
@@ -323,44 +331,58 @@ public class Mapper extends GUI {
 	 * Omits duplicate road names and includes the max time for each road
 	 *
 	 * @return String - text output of path*/
-	public String getTimePathTextOutput(List<Segment> path, Node start, Node end){
+	public String getTimePathTextOutput(List<Segment> path){
 
-		String name = null;
-		double time = 0, totalTime = 0;
+
+		double totalTime = 0, totalDist = 0;
 		Map<String, Double> textPath = new LinkedHashMap<String, Double>();
-
-		name = path.get(path.size()-1).road.name;
+		
+		for(Segment s : path)
+			s.setNameVis(false);
 
 		for(int i = path.size()-1; i >= 0; i--){
-
-			if(path.get(i).road.name == name){
-
-				if(i == 0)
-					textPath.put(name, time);
-
-				time += (path.get(i).length / AStarSearch.getRoadSpeed(path.get(i).road.speed));
-			}
-			else if(path.get(i).road.name != name){
-
+			
+			Segment segI = path.get(i);
+			
+			if( ! segI.isNameVis() ){
+				
+				String city = segI.road.city;
+				String name = segI.road.name;
+				double dist = segI.length;
+				
+				for(int j = i - 1; j >=0 ; j--){
+					
+					Segment segJ = path.get(j);
+					
+					if( ! segJ.isNameVis()){
+						if(name == segJ.road.name && city == segJ.road.city)
+							dist += segJ.length;
+					}
+				}
+				
+				double time = dist / AStarSearch.getRoadSpeed(segI.road.speed);
+				
+				totalDist += dist;
+				totalTime += (totalDist / AStarSearch.getRoadSpeed(segI.road.speed));
+				segI.setNameVis(true);
+				
+				
 				textPath.put(name, time);
-
-				name = path.get(i).road.name;
-				time += (path.get(i).length / AStarSearch.getRoadSpeed(path.get(i).road.speed));
-
-				if(i == 0)
-					textPath.put(name, time);
-
+				
 			}
 		}
-
+		
+		
 		StringBuilder sb = new StringBuilder();
-		for(Map.Entry<String, Double> e : textPath.entrySet()){
-			sb.append(e.getKey() +"\t"+ getTimeElapsed( (long) (e.getValue()*3600)) +" \n");
-			totalTime += e.getValue();
-		}
+		
+		sb.append("Finding Fastest Path.. \n\n");
+		
+		for(Map.Entry<String, Double> e : textPath.entrySet())
+			sb.append(e.getKey() +"\t"+ getTimeElapsed( (long) (e.getValue()*1000)) +" \n");
+		
 		DecimalFormat df = new DecimalFormat("####0.00");
-		sb.append("\nTotal Time: "+getTimeElapsed((long) (totalTime * 3600))+"\n");
-//		sb.append("Total Distance: "+  df.format(getTotalDistance(path))+"km \n");
+		sb.append("\nTotal Time: "+getTimeElapsed((long) (totalTime * 1000))+"\n");
+		sb.append("Total Distance: "+  df.format(totalDist)+"km \n");
 		sb.append("\nREACHED END GOAL!");
 
 		return sb.toString();
