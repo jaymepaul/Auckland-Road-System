@@ -27,7 +27,6 @@ public class AStarSearch {
 		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
 		List<Segment> path = new ArrayList<Segment>();
 		
-
 		//Initialize all Nodes: Visited-False, PathFrom-Null
 		for(Node n : graph.nodes.values()){
 			n.setVisited(false);
@@ -49,8 +48,6 @@ public class AStarSearch {
 			if(fn.getParent()!=null){				//Exception: Initial Start Node
 
 				Segment seg = graph.getSegmentFromPoints(fn.getParent(), fn.getNode());
-				seg.setPathDistance(fn.getDistToGoal());
-
 				path.add(seg);
 
 			}
@@ -91,7 +88,6 @@ public class AStarSearch {
 					double estTotal = costToNeigh + calcDistHeuristic(to, destination);		//Calculate total estimate with heuristic
 
 					FringeNode f = new FringeNode(to, node, costToNeigh, estTotal);		//Should only add once, and add only the best path, ensure that we can reach our destination!!
-					f.setDistToGoal(calcDistHeuristic(to, destination));		//NOTE: CHECK REDUNDANCY
 					fringe.offer(f);
 				}
 			}
@@ -110,18 +106,12 @@ public class AStarSearch {
 	public List<Segment> searchPathTime(){
 
 		List<Segment> timePath = new ArrayList<Segment>();
-
-		//Time Heuristic
-		double totalEstTime = calcTimeHeuristic(origin, destination);
-
 		PriorityQueue<FringeTimeNode> fringe = new PriorityQueue<FringeTimeNode>();
-		List<FringeTimeNode> fnList = new ArrayList<FringeTimeNode>();
-
+		
 		//Initialize all Nodes: Visited-False, PathFrom-Null
 		for(Node n : graph.nodes.values()){
 			n.setVisited(false);
 			n.setPathFrom(null);
-			n.setCost(0);
 		}
 
 		//Enqueue Start Node
@@ -136,12 +126,8 @@ public class AStarSearch {
 
 
 			if(fn.getParent()!=null){
-
 				Segment seg = graph.getSegmentFromPoints(fn.getParent(), node);
-				seg.setPathTime(fn.getTotalTimeCostToGoal());
-
 				timePath.add(seg);
-				fnList.add(fn);
 			}
 
 			if(!node.isVisited()){

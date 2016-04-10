@@ -100,9 +100,9 @@ public class Node implements Comparable<Node>{
 	public Collection<Node> getNeighbours(){
 
 		for(Segment s : outNeighbours){
-			if(s.start.nodeID == this.nodeID)
+			if(s.start.nodeID == nodeID)
 				neighbours.add(s.end);
-			else if(s.end.nodeID == this.nodeID)
+			else if(s.end.nodeID == nodeID)
 				neighbours.add(s.start);
 		}
 		return neighbours;

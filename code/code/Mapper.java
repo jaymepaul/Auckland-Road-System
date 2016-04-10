@@ -241,7 +241,7 @@ public class Mapper extends GUI {
 
 			if(graph.checkRoute(start, end)){
 
-				aStar.setOrigin(start); aStar.setDestination(end);		//TEST: 32743-12639, 15585-14197
+				aStar.setOrigin(start); aStar.setDestination(end);		//TEST: 15332-16411, 15332-29233
 				List<Segment> timePath = aStar.searchPathTime();
 
 				getTextOutputArea().setText(getTimePathTextOutput(timePath));
@@ -333,8 +333,8 @@ public class Mapper extends GUI {
 			totalTime += ( (nd.getDist() / nd.getSpeed()) * 3600 );
 		}
 
-		sb.append("\nTotal Distance: "+df.format(totalDist)+"km \n\n");
-//		sb.append("Total Time: "+getTimeElapsed((long) (totalTime))+"\n\n");
+		sb.append("\nTotal Distance: "+df.format(totalDist)+"km \n");
+		sb.append("Total Time: "+getTimeElapsed((long) (totalTime))+"\n\n");
 		sb.append("REACHED END GOAL!");
 
 		return sb.toString();
