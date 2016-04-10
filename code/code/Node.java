@@ -188,7 +188,20 @@ public class Node implements Comparable<Node>{
 
 	@Override
 	public int compareTo(Node n) {
-		return n.getDepth() - this.depth;
+		
+//		int cmp = 0;
+//		
+//		if(depth > n.depth)
+//			cmp = 1;
+//		else if(depth < n.depth)
+//			cmp = -1;
+//		else
+//			cmp = 0;
+//		
+//		return cmp;
+		
+		return 0;
+		
 	}
 }
 

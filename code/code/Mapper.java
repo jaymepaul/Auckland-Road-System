@@ -100,13 +100,20 @@ public class Mapper extends GUI {
 			return;
 
 		String prefix = getSearchBox().getText();								//Get User Input
-
-		if(trie.startsWith(prefix))												//Search Trie using prefix
-			graph.highlightRoads(trie.getRoads(prefix));						//If matches are found then get the entire Road and highlight it
-
-		String roadNames = trie.getRoadNames(prefix);							//Get all RoadNames
+		String roadNames = null;
+		
+		if(trie.search(prefix)){											//FULL MATCH
+			Road r = trie.getRoad(prefix);
+			graph.highlightRoad(r);
+			roadNames = "Street: " + r.name + "	Suburb: " + r.city + "\n";
+		}
+		else if(trie.startsWith(prefix)){									//PREFIX MATCH
+			graph.highlightRoads(trie.getPrefixRoads(prefix));				//If matches are found then get the entire Road and highlight it
+			roadNames = trie.getRoadNames(prefix);							//Get all RoadNames
+			
+		}											
+			
 		getTextOutputArea().setText(roadNames);									//Display RoadName on TextBox
-
 
 	}
 
@@ -205,6 +212,8 @@ public class Mapper extends GUI {
 	@Override
 	protected void findShortestPath(String origin, String destination, boolean distTime) {
 
+		reset();
+		
 		Node start = graph.nodes.get(Integer.parseInt(origin));
 		Node end = graph.nodes.get(Integer.parseInt(destination));
 
@@ -254,11 +263,13 @@ public class Mapper extends GUI {
 	 **/
 	public void findArticulationPoints(){
 
+		reset();
+		
 		IterArtPts artPts = new IterArtPts(graph);
 		articulationPoints = artPts.getArticulationPoints();			//Find Articulation Points
 
 		//===========================INTIALIZE=============================
-
+		
 		//Highlight Points on Graph
 		graph.setHighlightNodes(articulationPoints);
 
@@ -291,8 +302,6 @@ public class Mapper extends GUI {
 				String name = segI.road.name;
 				double dist = segI.length;
 
-				System.out.println("Name: "+name+"\t City: "+city);
-
 				for(int j = i - 1; j >=0 ; j--){
 
 					Segment segJ = path.get(j);
@@ -324,8 +333,8 @@ public class Mapper extends GUI {
 			totalTime += ( (nd.getDist() / nd.getSpeed()) * 3600 );
 		}
 
-		sb.append("\nTotal Distance: "+df.format(totalDist)+"km \n");
-		sb.append("Total Time: "+getTimeElapsed((long) (totalTime))+"\n\n");
+		sb.append("\nTotal Distance: "+df.format(totalDist)+"km \n\n");
+//		sb.append("Total Time: "+getTimeElapsed((long) (totalTime))+"\n\n");
 		sb.append("REACHED END GOAL!");
 
 		return sb.toString();
@@ -415,6 +424,8 @@ public class Mapper extends GUI {
 
 	public void reset(){
 		graph.articulationPoints = null;
+		graph.endNode = null; graph.startNode = null;
+		graph.highlightedSegments = null;
 	}
 
 	public String getTimeElapsed(long seconds){

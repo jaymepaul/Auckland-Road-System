@@ -56,14 +56,14 @@ public class IterArtPts {
 	 * and a Parent node then initiates the algorithm iteratively.
 	 * 
 	 * Essentially consists of THREE CASES: 
-	 * - No children, set children
+	 * - No children, create children
 	 * - Has children, process children
 	 * - Find Articulation Point
 	 * */
 	public void findArtPts(Node firstNode, Node root){
 		
 		// Push First Node
-		StackElement parent = new StackElement(root, 0, null, true);
+		StackElement parent = new StackElement(root, 0, null);
 		activationStack.push(new StackElement(firstNode, 0, parent));
 
 		Node node, child = null;
@@ -81,7 +81,7 @@ public class IterArtPts {
 
 				for (Node nhb : node.getNeighbours()) {
 					if (nhb != elem.getParent().getNode()) // EXCLUDE FROM NODE
-						elem.getChildren().add(nhb); // FIRST TIME
+						elem.getChildren().offer(nhb); // FIRST TIME
 				}
 			}
 
@@ -93,8 +93,7 @@ public class IterArtPts {
 				if (child.getDepth() < INF)
 					elem.setReach(Math.min(elem.getReach(), child.getDepth()));
 				else
-					activationStack.push(new StackElement(child, elem.getDepth() + 1,
-							new StackElement(elem.getNode(), 0, null, true))); // CHILDREN
+					activationStack.push(new StackElement(child, node.getDepth() + 1, elem)); // CHILDREN
 																				// TO
 																				// PROCESS
 			}

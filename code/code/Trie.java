@@ -37,10 +37,10 @@ public class Trie {
     public void initTrie(Map<Integer, Road> roads){
 
     	for(Road r : roads.values()){
-    		if( ! roadNames.contains(r.name))
-    			roadNames.add(r.name +","+r.city);		//Get List of Unique Road Names + City
+    		if( ! roadNames.contains(r.name+", "+r.city))
+    			roadNames.add(r.name +", "+r.city);		//Get List of Unique Road Names + City
 
-    		prefixRoads.put(r.name, r);				//Initialize Data Struct with RoadNames as indexes to Roads
+    		prefixRoads.put(r.name+", "+r.city, r);				//Initialize Data Struct with RoadNames as indexes to Roads
     	}
 
     	for(String s : roadNames)
@@ -74,7 +74,16 @@ public class Trie {
                 trieNode.isRoad = true;
         }
     }
-
+    
+    public boolean search(String prefix){
+    	TrieNode t = searchNode(prefix);
+    	
+    	if(t!= null && t.isRoad)
+    		return true;
+    	else 
+    		return false;
+    	
+    }
 
     /**Returns true if there is an entry in the Trie that matches the given prefix
      *
@@ -114,6 +123,35 @@ public class Trie {
     }
 
 
+	/**Returns the list of Road objects that correspond to the given prefix
+	 *
+	 * @param String prefix*/
+	public List<Road> getPrefixRoads(String prefix) {
+		
+		selectRoads = new ArrayList<Road>();
+
+		for(int i = 0; i < prefix.length(); i++){
+
+			for(Map.Entry<String, Road> entry : prefixRoads.entrySet()){
+
+				if(i <= entry.getKey().length()-1){
+
+					String subStr = entry.getKey().substring(0, i+1);				//Get Substring of RoadName based off ith pos on prefix
+
+					if(prefix.equals(subStr)){										//If Prefix Matches, Add to list of Roads
+						selectRoads.add(entry.getValue());
+					}
+				}
+			}
+		}
+
+		return selectRoads;
+	}
+	
+	public Road getRoad(String prefix){
+		return prefixRoads.get(prefix);
+	}
+	
 	/**Returns the list of Road objects that correspond to the given prefix
 	 *
 	 * @param String prefix*/

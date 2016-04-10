@@ -15,7 +15,6 @@ public class FringeNode implements Comparable<FringeNode> {
 		this.costToHere = costToHere;
 		this.totEstCost = totEstCost;
 
-		this.totalCostToGoal = totEstCost - costToHere;		//Purely Heuristic
 	}
 
 
@@ -90,9 +89,9 @@ public class FringeNode implements Comparable<FringeNode> {
 
 		int cmp = 0;
 
-		if (totalCostToGoal > fn.totalCostToGoal)
+		if (totEstCost > fn.totEstCost)
 			cmp = 1;
-		else if(totalCostToGoal < fn.totalCostToGoal)
+		else if(totEstCost < fn.totEstCost)
 			cmp = -1;
 		else
 			cmp = 0;

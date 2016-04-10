@@ -24,11 +24,9 @@ public class AStarSearch {
 	 * @return List<Segment> path - shortest path from start to end*/
 	public List<Segment> searchDist(){
 
-
 		PriorityQueue<FringeNode> fringe = new PriorityQueue<FringeNode>();
 		List<Segment> path = new ArrayList<Segment>();
-
-		List<FringeNode> fnList = new ArrayList<FringeNode>();
+		
 
 		//Initialize all Nodes: Visited-False, PathFrom-Null
 		for(Node n : graph.nodes.values()){
@@ -46,7 +44,7 @@ public class AStarSearch {
 			FringeNode fn = fringe.poll(); 			//Poll the most promising Node - based of lowest heuristic estimate
 			Node node = fn.getNode();
 
-			displayInfo(fn, calcDistHeuristic(origin, destination));
+			//displayInfo(fn, calcDistHeuristic(origin, destination));
 
 			if(fn.getParent()!=null){				//Exception: Initial Start Node
 
@@ -54,7 +52,6 @@ public class AStarSearch {
 				seg.setPathDistance(fn.getDistToGoal());
 
 				path.add(seg);
-				fnList.add(fn);
 
 			}
 			if (!node.isVisited()) {				//Initialize if not visited - mark as visited, set pathFrom and cost
@@ -72,7 +69,7 @@ public class AStarSearch {
 
 				//Exception: Check if valid one-way
 				if(s.road.oneWay == 1){		//1 = Oneway, 0 not
-					System.out.println("ONE WAY FOUND! @ "+s.road.roadID+ "	N1: "+s.start.nodeID+ "	N2: "+s.end.nodeID);
+					//System.out.println("ONE WAY FOUND! @ "+s.road.roadID+ "	N1: "+s.start.nodeID+ "	N2: "+s.end.nodeID);
 					if(s.start.nodeID == node.nodeID)				//Ensure that to = end of segment
 						to = s.end;
 					else											//If segment doesnt conform to one-way rule, then discard
@@ -100,7 +97,7 @@ public class AStarSearch {
 			}
 		}
 
-		return trimPath(path, fnList);				//Ensures that only the shortest and reachable path is considered;
+		return trimPath(path);				//Ensures that only the shortest and reachable path is considered;
 	}
 
 	/**Finds the path that takes the least amount of time,
@@ -135,9 +132,8 @@ public class AStarSearch {
 			FringeTimeNode fn = fringe.poll();
 			Node node = fn.getNode();
 
-			displayTimeInfo(fn, totalEstTime);
+			//displayTimeInfo(fn, totalEstTime);
 
-			System.out.println("CHOSEN PRIORITY: " +fn.getTotalTimeCostToGoal());
 
 			if(fn.getParent()!=null){
 
@@ -156,14 +152,13 @@ public class AStarSearch {
 			if(node == destination)
 				break;
 
-			System.out.println("================================================");
 			Node to = null;
 			for(Segment s : node.getOutNeighbours()){
 
 				//======================RESTRICTIONS===========================//
 				//Exception: Check if valid one-way
 				if(s.road.oneWay == 1){		//1 = Oneway, 0 not
-					System.out.println("ONE WAY FOUND! @ "+s.road.roadID+ "	N1: "+s.start.nodeID+ "	N2: "+s.end.nodeID);
+					//System.out.println("ONE WAY FOUND! @ "+s.road.roadID+ "	N1: "+s.start.nodeID+ "	N2: "+s.end.nodeID);
 					if(s.start.nodeID == node.nodeID)				//Ensure that to = end of segment
 						to = s.end;
 					else											//If segment doesnt conform to one-way rule, then discard
@@ -183,21 +178,20 @@ public class AStarSearch {
 
 				if(!to.isVisited()){
 
-					double costToNeigh = fn.getTimeCostToHere() + ( (s.length/getRoadSpeed(s.road.speed)) * 3600) ;
+					double costToNeigh = fn.getTimeCostToHere() + ((s.length/getRoadSpeed(s.road.speed)) * 3600) - s.road.roadClass;		//Reduce cost based on road class level
 					double estTotal = costToNeigh + calcTimeHeuristic(to, destination);
 
-					if(to.hasLights || node.hasLights){		// || node.hasLights
-						System.out.println("Traffic Light @ "+to.nodeID);
-						estTotal += 3;		//Add Extra Cost if To Node has lights - Reduce its priority, more expensive
+					if(to.hasLights){		// || node.hasLights
+//						System.out.println("Traffic Light @ "+to.nodeID);
+						estTotal += 5;		//Add Extra Cost if To Node has lights - Reduce its priority, more expensive
 					}
 
-					System.out.println("PRIORITY: " + (estTotal - costToNeigh));
 					fringe.offer(new FringeTimeNode(to, node, costToNeigh, estTotal));
 				}
 			}
 		}
 
-		return trimTimePath(timePath, fnList);
+		return trimPath(timePath);
 	}
 
 
@@ -263,8 +257,8 @@ public class AStarSearch {
 				if (rest.getN1().nodeID == N1.nodeID && rest.getN2().nodeID == N2.nodeID && rest.getN().nodeID == n.nodeID
 						&& rest.getR1().roadID == prevSeg.road.roadID && rest.getR2().roadID == curSeg.road.roadID ) {
 					restrict = true;
-					System.out.println("RESTRICTION FOUND! ");
-					System.out.println("N1: " + N1.nodeID + "	N: " + n.nodeID + "	N2: " + N2.nodeID + "\n");
+					//System.out.println("RESTRICTION FOUND! ");
+					//System.out.println("N1: " + N1.nodeID + "	N: " + n.nodeID + "	N2: " + N2.nodeID + "\n");
 				}
 			}
 		}
@@ -276,64 +270,34 @@ public class AStarSearch {
 	/**Ensures that the path to be highlighted excludes any incorrect routes/paths
 	 *
 	 * @return List<Segment> - path to be highlighted*/
-	public List<Segment> trimPath(List<Segment> path, List<FringeNode> fnList){
+	public List<Segment> trimPath(List<Segment> path){
 
 
 		List<Segment> realPath = new ArrayList<Segment>();
-
-		Node to = fnList.get(fnList.size()-1).getNode();
-		Node from = fnList.get(fnList.size()-1).getParent();
-
-		//GO BACKWARDS FROM GOAL
-		for(int i = path.size()-1; i >= 0; i--){
-
-			if((path.get(i).start.nodeID == from.nodeID && path.get(i).end.nodeID == to.nodeID) ||
-					(path.get(i).start.nodeID == to.nodeID && path.get(i).end.nodeID == from.nodeID)){
-
+		
+		Node to = null;
+		realPath.add(path.get(path.size()-1));
+		if(path.get(path.size()-1).end == destination)
+			to = path.get(path.size()-1).start;
+		else
+			to = path.get(path.size()-1).end;
+		
+		
+		for(int i = path.size()-2 ; i >= 0; i--){
+			
+			if(path.get(i).start == to && path.get(i).end == to.getPathFrom()){			//Find Matching Segment
 				realPath.add(path.get(i));
-
-				for(FringeNode fn : fnList){
-					if(fn.getNode().nodeID == from.nodeID){
-						from = fn.getParent();
-						to = fn.getNode();
-					}
-				}
+				to = path.get(i).end;
+			}
+			else if(path.get(i).end == to && path.get(i).start == to.getPathFrom()){
+				realPath.add(path.get(i));
+				to = path.get(i).start;
 			}
 		}
-
+		
 		return realPath;
 	}
 
-	/**Ensures that the path to be highlighted excludes any incorrect routes/paths
-	 *
-	 *  @return List<Segment> - path to be highlighted*/
-	public List<Segment> trimTimePath(List<Segment> path, List<FringeTimeNode> fnList){
-
-
-		List<Segment> realPath = new ArrayList<Segment>();
-
-		Node to = fnList.get(fnList.size()-1).getNode();
-		Node from = fnList.get(fnList.size()-1).getParent();
-
-		//GO BACKWARDS FROM GOAL
-		for(int i = path.size()-1; i >= 0; i--){
-
-			if((path.get(i).start.nodeID == from.nodeID && path.get(i).end.nodeID == to.nodeID) ||
-					(path.get(i).start.nodeID == to.nodeID && path.get(i).end.nodeID == from.nodeID)){
-
-				realPath.add(path.get(i));
-
-				for(FringeTimeNode fn : fnList){
-					if(fn.getNode().nodeID == from.nodeID){
-						from = fn.getParent();
-						to = fn.getNode();
-					}
-				}
-			}
-		}
-
-		return realPath;
-	}
 
 	private void displayInfo(FringeNode fn, double totalDist) {
 
@@ -423,6 +387,7 @@ public class AStarSearch {
 
 		return spd;
 	}
+	
 
 	public Node getOrigin() {
 		return origin;

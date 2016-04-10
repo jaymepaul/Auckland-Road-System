@@ -13,25 +13,12 @@ public class StackElement {
 	 * @param Node node - graph Node to be processed
 	 * @param int reach - reachBack value of this Node
 	 * @param StackElement parent - parent StackElement that contains Node to not be visited & reach update*/
-	public StackElement(Node node, int reach, StackElement parent){
-		this.node = node;
-		this.reach = reach;
-		this.parent = parent;
-		this.depth = parent.getDepth();
-		this.children = parent.getChildren();
-	}
-	
-	/**Alternative Constructor, creates a new StackElement based of..
-	 * 
-	 * @param Node node - parent Node
-	 * @param int depth - depth of this Node if visited via this StackElem
-	 * @param PriorityQueue<Node> children - Unvisited neighbors to be processed*/
-	public StackElement(Node node, int depth, PriorityQueue<Node> children, boolean alt){
+	public StackElement(Node node, int depth, StackElement parent){
 		this.node = node;
 		this.depth = depth;
-		this.children = children;
+		this.parent = parent;
 	}
-
+	
 	public Node getNode() {
 		return node;
 	}

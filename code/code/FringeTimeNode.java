@@ -16,7 +16,6 @@ public class FringeTimeNode implements Comparable<FringeTimeNode>{
 		this.timeCostToHere = timeCostToHere;
 		this.totEstTimeCost = totEstTimeCost;
 
-		this.totalTimeCostToGoal = totEstTimeCost - timeCostToHere;		//Purely Heuristic
 	}
 
 	public Node getNode() {
@@ -93,9 +92,9 @@ public class FringeTimeNode implements Comparable<FringeTimeNode>{
 
 		int cmp = 0;
 
-		if (totalTimeCostToGoal > fn.totalTimeCostToGoal)
+		if (totEstTimeCost > fn.totEstTimeCost)
 			cmp = 1;
-		else if(totalTimeCostToGoal < fn.totalTimeCostToGoal)
+		else if(totEstTimeCost < fn.totEstTimeCost)
 			cmp = -1;
 		else
 			cmp = 0;

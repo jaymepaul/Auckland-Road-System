@@ -77,9 +77,10 @@ public class Graph {
 		//Draw Highlighted Segments
 		g2.setColor(Mapper.HIGHLIGHT_COLOUR);
 		g2.setStroke(new BasicStroke(3));
-		for (Segment seg : highlightedSegments)
-			seg.draw(g2, origin, scale);
-
+		if(highlightedSegments!=null){
+			for (Segment seg : highlightedSegments)
+				seg.draw(g2, origin, scale);
+		}
 
 		// draw all the nodes.
 		g2.setColor(Mapper.NODE_COLOUR);
@@ -244,6 +245,16 @@ public class Graph {
 					highlightedSegments.add(s);
 				}
 			}
+		}
+	}
+	
+	public void highlightRoad(Road r){
+		
+		highlightedSegments = new ArrayList<Segment>();
+		
+		for(Road rd : r.getAllRoads(roads)){
+			for(Segment s : rd.components)
+				highlightedSegments.add(s);
 		}
 	}
 
