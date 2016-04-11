@@ -7,9 +7,9 @@ public class StackElement {
 	private StackElement parent;
 	private int reach, depth;
 	private PriorityQueue<Node> children;
-	
+
 	/**Primary Constructor, creates a new StackElement that contains..
-	 * 
+	 *
 	 * @param Node node - graph Node to be processed
 	 * @param int reach - reachBack value of this Node
 	 * @param StackElement parent - parent StackElement that contains Node to not be visited & reach update*/
@@ -18,7 +18,8 @@ public class StackElement {
 		this.depth = depth;
 		this.parent = parent;
 	}
-	
+
+
 	public Node getNode() {
 		return node;
 	}
@@ -59,9 +60,9 @@ public class StackElement {
 		this.children = children;
 	}
 
-	
 
-	
-	
-	
+
+
+
+
 }
